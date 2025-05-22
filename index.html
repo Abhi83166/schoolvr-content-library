@@ -2608,52 +2608,69 @@
             });
         }
         
-        function updateBreadcrumbs() {
+                function updateBreadcrumbs() {
             const breadcrumbs = document.getElementById('breadcrumbs');
             
-            // Clear existing breadcrumbs except for Home
-            while (breadcrumbs.childNodes.length > 2) {
-                breadcrumbs.removeChild(breadcrumbs.lastChild);
-            }
+            // Create home link element
+            const homeLinkElement = document.createElement('a');
+            homeLinkElement.href = '#';
+            homeLinkElement.className = 'text-blue-600 dark:text-blue-400 hover:underline breadcrumb-home';
+            homeLinkElement.textContent = 'Home';
+            homeLinkElement.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToHome();
+            });
             
-            // Always add a separator after Home
-            if (breadcrumbs.childNodes.length === 1) {
+            breadcrumbs.innerHTML = ''; // Clear all current breadcrumbs
+            breadcrumbs.appendChild(homeLinkElement); // Add the Home link
+
+            const addSeparator = () => {
                 const separator = document.createElement('span');
                 separator.className = 'mx-2 text-gray-500 dark:text-gray-400';
                 separator.textContent = '/';
                 breadcrumbs.appendChild(separator);
-            }
-            
-            // Add verse breadcrumb if applicable
+            };
+
             if (currentVerse) {
-                const verseData = database[currentVerse];
-                const verseBreadcrumb = document.createElement('a');
-                verseBreadcrumb.href = '#';
-                verseBreadcrumb.className = `text-${verseData.color}-600 dark:text-${verseData.color}-400 hover:underline`;
-                verseBreadcrumb.textContent = verseData.name;
-                verseBreadcrumb.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    navigateToVerse(currentVerse);
-                });
-                breadcrumbs.appendChild(verseBreadcrumb);
+                addSeparator(); // Add separator: Home /
                 
-                // Add separator
-                const separator = document.createElement('span');
-                separator.className = 'mx-2 text-gray-500 dark:text-gray-400';
-                separator.textContent = '/';
-                breadcrumbs.appendChild(separator);
+                const verseData = database[currentVerse];
+                // Verse name is a link if a topic is selected, otherwise it's text indicating current context
+                const verseElement = currentTopic ? document.createElement('a') : document.createElement('span'); 
+                
+                verseElement.textContent = verseData.name;
+                // Apply verse-specific color and link styling if it's an 'a' tag
+                let verseClass = `text-${verseData.color}-600 dark:text-${verseData.color}-400`;
+                if (currentTopic) {
+                    verseClass += ' hover:underline';
+                    verseElement.href = '#';
+                    verseElement.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        navigateToVerse(currentVerse); // Clicking verse name takes back to verse's topic list
+                    });
+                }
+                verseElement.className = verseClass;
+                breadcrumbs.appendChild(verseElement);
+
+                if (currentTopic) {
+                    addSeparator(); // Add separator: Home / VerseLink /
+                    const topicData = database[currentVerse].topics[currentTopic];
+                    const topicBreadcrumb = document.createElement('span'); 
+                    topicBreadcrumb.className = 'text-gray-700 dark:text-gray-300'; 
+                    topicBreadcrumb.textContent = `${currentTopic}. ${topicData.name}`;
+                    breadcrumbs.appendChild(topicBreadcrumb);
+                }
+            } else if (!document.getElementById('searchResultsView').classList.contains('hidden')) {
+                // Handle breadcrumb for search results page when not in a specific verse
+                addSeparator();
+                const searchBreadcrumb = document.createElement('span');
+                searchBreadcrumb.className = 'text-gray-700 dark:text-gray-300';
+                searchBreadcrumb.textContent = 'Search Results';
+                breadcrumbs.appendChild(searchBreadcrumb);
             }
-            
-            // Add topic breadcrumb if applicable
-            if (currentTopic) {
-                const topicData = database[currentVerse].topics[currentTopic];
-                const topicBreadcrumb = document.createElement('span');
-                topicBreadcrumb.className = 'text-gray-700 dark:text-gray-300';
-                topicBreadcrumb.textContent = `${currentTopic}. ${topicData.name}`;
-                breadcrumbs.appendChild(topicBreadcrumb);
-            }
+            // If neither currentVerse nor search view is active, breadcrumbs will just be "Home"
         }
-        
+
         function performSearch(query) {
             const searchResultsView = document.getElementById('searchResultsView');
             const searchResultsList = document.getElementById('searchResultsList');
