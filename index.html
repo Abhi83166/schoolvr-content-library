@@ -1,0 +1,3013 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schoolvr Verse Explorer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bioverse-color: #c8e6c9;
+            --bioverse-dark: #4caf50;
+            --chemverse-color: #fff9c4;
+            --chemverse-dark: #fbc02d;
+            --atomverse-color: #bbdefb;
+            --atomverse-dark: #2196f3;
+            --mathsverse-color: #e1bee7;
+            --mathsverse-dark: #9c27b0;
+            --geoverse-color: #ffccbc;
+            --geoverse-dark: #ff5722;
+            --spaceverse-color: #b2ebf2;
+            --spaceverse-dark: #00bcd4;
+        }
+
+        .dark {
+            --bioverse-color: #c8e6c9;
+            --bioverse-dark: #4caf50;
+            --chemverse-color: #fff9c4;
+            --chemverse-dark: #fbc02d;
+            --atomverse-color: #bbdefb;
+            --atomverse-dark: #2196f3;
+            --mathsverse-color: #e1bee7;
+            --mathsverse-dark: #9c27b0;
+            --geoverse-color: #ffccbc;
+            --geoverse-dark: #ff5722;
+            --spaceverse-color: #b2ebf2;
+            --spaceverse-dark: #00bcd4;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .verse-card {
+            transition: all 0.3s;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .verse-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .topic-item {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .topic-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark .topic-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .topic-item.active {
+            border-left-color: currentColor;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark .topic-item.active {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .subtopic-item {
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .subtopic-item:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .dark .subtopic-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .subtopic-item::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            opacity: 0.7;
+        }
+
+        /* Customized scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4a5568;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+
+        /* Search results animation */
+        @keyframes highlight {
+            0% { background-color: rgba(250, 204, 21, 0.4); }
+            100% { background-color: transparent; }
+        }
+
+        .highlight {
+            animation: highlight 2s;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid currentColor;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold mb-4 md:mb-0">SchoolVR <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">Verse Explorer</span></h1>
+            
+            <div class="flex space-x-4 items-center">
+                <!-- Search bar -->
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Search topics..." class="py-2 pl-10 pr-4 rounded-full border border-gray-300 dark:border-gray-700 
+                                  bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500
+                                  w-full md:w-64 transition-all duration-300 focus:w-72">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                
+                <!-- Dark mode toggle -->
+                <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:block"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main navigation breadcrumbs -->
+        <nav class="mb-6 flex items-center overflow-x-auto pb-2 whitespace-nowrap" id="breadcrumbs">
+            <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline breadcrumb-home">Home</a>
+        </nav>
+
+        <!-- Main content area -->
+        <main>
+            <!-- Home View (Subject Selection) -->
+            <div id="homeView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Bioverse Card -->
+                <div class="verse-card p-6 cursor-pointer" style="background-color: var(--bioverse-color);" data-verse="bioverse" data-color="green">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-2xl font-bold text-green-800 dark:text-green-200 mb-2">Bioverse</h2>
+                        <span class="text-green-700 dark:text-green-300">
+                            <i class="fas fa-dna text-2xl"></i>
+                        </span>
+                    </div>
+                    <p class="text-green-700 dark:text-green-300 mb-4">Explore the world of living organisms</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-700 dark:text-green-300 text-sm">455 Concepts</span>
+                        <button class="bg-green-600 hover:bg-green-700 text-white rounded-full px-4 py-1.5 text-sm font-medium transition">
+                            Explore <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chemverse Card -->
+                <div class="verse-card p-6 cursor-pointer" style="background-color: var(--chemverse-color);" data-verse="chemverse" data-color="yellow">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-2xl font-bold text-yellow-800 dark:text-yellow-200 mb-2">Chemverse</h2>
+                        <span class="text-yellow-700 dark:text-yellow-300">
+                            <i class="fas fa-flask text-2xl"></i>
+                        </span>
+                    </div>
+                    <p class="text-yellow-700 dark:text-yellow-300 mb-4">Discover the science of matter</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-yellow-700 dark:text-yellow-300 text-sm">399 Concepts</span>
+                        <button class="bg-yellow-600 hover:bg-yellow-700 text-white rounded-full px-4 py-1.5 text-sm font-medium transition">
+                            Explore <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Atomverse Card -->
+                <div class="verse-card p-6 cursor-pointer" style="background-color: var(--atomverse-color);" data-verse="atomverse" data-color="blue">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-2xl font-bold text-blue-800 dark:text-blue-200 mb-2">Atomverse</h2>
+                        <span class="text-blue-700 dark:text-blue-300">
+                            <i class="fas fa-atom text-2xl"></i>
+                        </span>
+                    </div>
+                    <p class="text-blue-700 dark:text-blue-300 mb-4">Understand the laws of nature</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-700 dark:text-blue-300 text-sm">300 Concepts</span>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 text-sm font-medium transition">
+                            Explore <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Mathsverse Card -->
+                <div class="verse-card p-6 cursor-pointer" style="background-color: var(--mathsverse-color);" data-verse="mathsverse" data-color="purple">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-2xl font-bold text-purple-800 dark:text-purple-200 mb-2">Mathsverse</h2>
+                        <span class="text-purple-700 dark:text-purple-300">
+                            <i class="fas fa-square-root-alt text-2xl"></i>
+                        </span>
+                    </div>
+                    <p class="text-purple-700 dark:text-purple-300 mb-4">Master mathematical concepts</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-purple-700 dark:text-purple-300 text-sm">653 Concepts</span>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-4 py-1.5 text-sm font-medium transition">
+                            Explore <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Geoverse Card (Coming Soon) -->
+                <div class="verse-card p-6 opacity-80 cursor-not-allowed" style="background-color: var(--geoverse-color);" data-verse="geoverse" data-color="orange">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-2xl font-bold text-orange-800 dark:text-orange-200 mb-2">Geoverse</h2>
+                        <span class="text-orange-700 dark:text-orange-300">
+                            <i class="fas fa-globe-americas text-2xl"></i>
+                        </span>
+                    </div>
+                    <p class="text-orange-700 dark:text-orange-300 mb-4">Journey through geographical wonders</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-orange-700 dark:text-orange-300 text-sm">Coming Soon</span>
+                        <div class="bg-orange-600 text-white rounded-full px-4 py-1.5 text-sm font-medium opacity-50">
+                            <i class="fas fa-lock mr-1"></i> Locked
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Spaceverse Card (Coming Soon) -->
+                <div class="verse-card p-6 opacity-80 cursor-not-allowed" style="background-color: var(--spaceverse-color);" data-verse="spaceverse" data-color="cyan">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-2xl font-bold text-cyan-800 dark:text-cyan-200 mb-2">Spaceverse</h2>
+                        <span class="text-cyan-700 dark:text-cyan-300">
+                            <i class="fas fa-rocket text-2xl"></i>
+                        </span>
+                    </div>
+                    <p class="text-cyan-700 dark:text-cyan-300 mb-4">Explore the cosmos and beyond</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-700 dark:text-cyan-300 text-sm">Coming Soon</span>
+                        <div class="bg-cyan-600 text-white rounded-full px-4 py-1.5 text-sm font-medium opacity-50">
+                            <i class="fas fa-lock mr-1"></i> Locked
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verse View (Topics and Subtopics) -->
+            <div id="verseView" class="hidden">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Topics List Sidebar -->
+                    <div class="md:w-1/3 lg:w-1/4 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 h-[70vh] overflow-y-auto">
+                        <h2 class="text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700" id="topicsHeader">Topics</h2>
+                        <div id="topicsList" class="space-y-1"></div>
+                    </div>
+                    
+                    <!-- Subtopics Content Area -->
+                    <div class="md:w-2/3 lg:w-3/4 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 h-[70vh] overflow-y-auto">
+                        <h2 class="text-2xl font-bold mb-4" id="subtopicsHeader">Select a topic</h2>
+                        <div id="subtopicsList" class="space-y-3">
+                            <p class="text-gray-500 dark:text-gray-400">Please select a topic from the list on the left to view its subtopics.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results View -->
+            <div id="searchResultsView" class="hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-search mr-2 text-blue-500 dark:text-blue-400"></i>
+                        Search Results: <span id="searchTermDisplay" class="ml-2 font-normal"></span>
+                        <span id="resultCount" class="ml-auto text-sm text-gray-500 dark:text-gray-400"></span>
+                    </h2>
+                    <div id="searchResultsList" class="space-y-4 min-h-[200px]">
+                        <!-- Results will be displayed here -->
+                    </div>
+                    <div id="noResultsMessage" class="hidden py-6 text-center">
+                        <i class="fas fa-exclamation-circle text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-500 dark:text-gray-400">No results found. Try different keywords.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 dark:text-gray-400 text-sm">
+            <p>© 2025 Schoolvr Verse Explorer. All content follows the Schoolvr Syllabus.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Database of all subjects, topics and subtopics
+        const database = {
+            bioverse: {
+                name: "Bioverse",
+                color: "green",
+                icon: "fa-dna",
+                topics: {
+                    "1": {
+                        name: "Characteristics and Classification of Living Organisms",
+                        subtopics: {
+                            "1.1": {
+                                name: "Characteristics of living organisms",
+                                concepts: [
+                                    "Movement", "Respiration", "Sensitivity", "Growth", "Reproduction", 
+                                    "Excretion", "Nutrition"
+                                ]
+                            },
+                            "1.2": {
+                                name: "Concept and uses of classification systems",
+                                concepts: [
+                                    "Classification of organisms", "Species", "Binomial system", 
+                                    "Dichotomous keys", "Evolutionary relationships", "DNA classification"
+                                ]
+                            },
+                            "1.3": {
+                                name: "Features of organisms",
+                                concepts: [
+                                    "Kingdoms (Animals, Plants, Fungi, Prokaryotes, Protoctists)",
+                                    "Vertebrates (Mammals, Birds, Reptiles, Amphibians, Fish)",
+                                    "Arthropods (Myriapods, Insects, Arachnids, Crustaceans)",
+                                    "Ferns and flowering plants",
+                                    "Viruses (Protein coat, Genetic material)"
+                                ]
+                            }
+                        }
+                    },
+                    "2": {
+                        name: "Organisation of the Organism",
+                        subtopics: {
+                            "2.1": {
+                                name: "Cell structure",
+                                concepts: [
+                                    "Cell wall", "Cell membrane", "Nucleus", "Cytoplasm", "Chloroplasts",
+                                    "Ribosomes", "Mitochondria", "Vacuoles", "Circular DNA", "Plasmids"
+                                ]
+                            },
+                            "2.2": {
+                                name: "Size of specimens",
+                                concepts: [
+                                    "Magnification formula", "Millimetres to micrometres conversion"
+                                ]
+                            }
+                        }
+                    },
+                    "3": {
+                        name: "Movement into and out of Cells",
+                        subtopics: {
+                            "3.1": {
+                                name: "Diffusion",
+                                concepts: [
+                                    "Surface area", "Temperature", "Concentration gradient", "Distance"
+                                ]
+                            },
+                            "3.2": {
+                                name: "Osmosis",
+                                concepts: [
+                                    "Water as a solvent", "Partially permeable membranes", "Turgid", 
+                                    "Turgor pressure", "Plasmolysis", "Flaccid"
+                                ]
+                            },
+                            "3.3": {
+                                name: "Active transport",
+                                concepts: [
+                                    "Protein carriers"
+                                ]
+                            }
+                        }
+                    },
+                    "4": {
+                        name: "Biological Molecules",
+                        subtopics: {
+                            "4.1": {
+                                name: "Biological molecules",
+                                concepts: [
+                                    "Carbohydrates", "Fats", "Proteins", "Starch", "Glycogen", 
+                                    "Cellulose", "Glucose", "Amino acids", "Fatty acids", "Glycerol",
+                                    "DNA structure (Double helix, Bases, A with T, C with G)"
+                                ]
+                            }
+                        }
+                    },
+                    "5": {
+                        name: "Enzymes",
+                        subtopics: {
+                            "5.1": {
+                                name: "Enzymes",
+                                concepts: [
+                                    "Catalysts", "Active site", "Substrate", "Product", 
+                                    "Optimum temperature", "Denaturation", "Kinetic energy", "Collision frequency"
+                                ]
+                            }
+                        }
+                    },
+                    "6": {
+                        name: "Plant Nutrition",
+                        subtopics: {
+                            "6.1": {
+                                name: "Photosynthesis",
+                                concepts: [
+                                    "Chlorophyll", "Energy transfer", "Starch", "Cellulose", "Glucose", 
+                                    "Respiration", "Sucrose", "Nitrate ions", "Magnesium ions", "Limiting factors"
+                                ]
+                            },
+                            "6.2": {
+                                name: "Leaf structure",
+                                concepts: [
+                                    "Chloroplasts", "Cuticle", "Guard cells", "Stomata", "Epidermis", 
+                                    "Mesophyll", "Air spaces", "Vascular bundles", "Xylem", "Phloem"
+                                ]
+                            }
+                        }
+                    },
+                    "7": {
+                        name: "Human Nutrition",
+                        subtopics: {
+                            "7.1": {
+                                name: "Diet",
+                                concepts: [
+                                    "Carbohydrates", "Fats and oils", "Proteins", "Vitamins (C, D)", 
+                                    "Mineral ions (Calcium, Iron)", "Fibre", "Water", "Scurvy", "Rickets"
+                                ]
+                            },
+                            "7.2": {
+                                name: "Digestive system",
+                                concepts: [
+                                    "Alimentary canal (Mouth, Oesophagus, Stomach, Small intestine, Large intestine, Rectum, Anus)",
+                                    "Associated organs (Salivary glands, Pancreas, Liver, Gall bladder)"
+                                ]
+                            },
+                            "7.3": {
+                                name: "Physical digestion",
+                                concepts: [
+                                    "Incisors", "Canines", "Premolars", "Molars", "Enamel", "Dentine", "Pulp", 
+                                    "Nerves", "Blood vessels", "Cement", "Stomach", "Bile", "Emulsification"
+                                ]
+                            },
+                            "7.4": {
+                                name: "Chemical digestion",
+                                concepts: [
+                                    "Amylase", "Protease", "Lipase", "Hydrochloric acid", "Pepsin", 
+                                    "Trypsin", "Bile", "Neutralization"
+                                ]
+                            },
+                            "7.5": {
+                                name: "Absorption",
+                                concepts: [
+                                    "Villi", "Microvilli", "Capillaries", "Lacteals"
+                                ]
+                            }
+                        }
+                    },
+                    "8": {
+                        name: "Transport in Plants",
+                        subtopics: {
+                            "8.1": {
+                                name: "Xylem and phloem",
+                                concepts: [
+                                    "Xylem (Water transport, Mineral ions, Support)",
+                                    "Phloem (Sucrose transport, Amino acids)"
+                                ]
+                            },
+                            "8.2": {
+                                name: "Water uptake",
+                                concepts: [
+                                    "Root hair cells", "Large surface area", 
+                                    "Water pathway (Root hair cells, Root cortex cells, Xylem, Mesophyll cells)"
+                                ]
+                            },
+                            "8.3": {
+                                name: "Transpiration",
+                                concepts: [
+                                    "Water vapour", "Mesophyll cells", "Stomata", "Transpiration pull", "Wilting"
+                                ]
+                            },
+                            "8.4": {
+                                name: "Translocation",
+                                concepts: [
+                                    "Sources (Sucrose, Amino acids)", "Sinks"
+                                ]
+                            }
+                        }
+                    },
+                    "9": {
+                        name: "Transport in Animals",
+                        subtopics: {
+                            "9.1": {
+                                name: "Circulatory systems",
+                                concepts: [
+                                    "Single circulation (Fish)", "Double circulation (Mammals)", 
+                                    "Advantages of double circulation"
+                                ]
+                            },
+                            "9.2": {
+                                name: "Heart",
+                                concepts: [
+                                    "Atria", "Ventricles", "Valves", "Coronary arteries", "ECG", "Pulse rate",
+                                    "Valves (Atrioventricular, Semilunar)", 
+                                    "Coronary heart disease (Risk factors, Diet, Exercise)"
+                                ]
+                            },
+                            "9.3": {
+                                name: "Blood vessels",
+                                concepts: [
+                                    "Arteries", "Veins", "Capillaries", "Lumen", "Valves", "Vena cava", 
+                                    "Aorta", "Pulmonary artery", "Pulmonary vein", "Renal artery", "Renal vein"
+                                ]
+                            },
+                            "9.4": {
+                                name: "Blood",
+                                concepts: [
+                                    "Red blood cells", "White blood cells", "Platelets", "Plasma", 
+                                    "Haemoglobin", "Phagocytosis", "Antibody production", 
+                                    "Clotting (Fibrinogen, Fibrin)", "Lymphocytes", "Phagocytes"
+                                ]
+                            }
+                        }
+                    },
+                    "10": {
+                        name: "Diseases and Immunity",
+                        subtopics: {
+                            "10.1": {
+                                name: "Diseases and immunity",
+                                concepts: [
+                                    "Pathogen", "Transmissible disease", "Direct contact", "Indirect contact",
+                                    "Body defenses (Skin, Mucus, Stomach acid, White blood cells)",
+                                    "Active immunity (Antibodies, Vaccination, Memory cells)",
+                                    "Passive immunity (Breastfeeding, Placenta)",
+                                    "Cholera (Bacterium, Toxin, Diarrhoea, Dehydration)"
+                                ]
+                            }
+                        }
+                    },
+                    "11": {
+                        name: "Gas Exchange in Humans",
+                        subtopics: {
+                            "11.1": {
+                                name: "Gas Exchange in Humans",
+                                concepts: [
+                                    "Large surface area", "Thin surface", "Good blood supply", "Good ventilation",
+                                    "Lungs", "Diaphragm", "Ribs", "Intercostal muscles", "Larynx", "Trachea",
+                                    "Bronchi", "Bronchioles", "Alveoli", "Capillaries", 
+                                    "Limewater (test for carbon dioxide)", "Oxygen", "Carbon dioxide", "Water vapour",
+                                    "Physical activity", "Rate of breathing", "Depth of breathing", 
+                                    "Internal intercostal muscles", "External intercostal muscles",
+                                    "Cartilage in the trachea", "Volume changes", "Pressure changes", "Thorax",
+                                    "Ventilation", "Goblet cells", "Mucus", "Ciliated cells"
+                                ]
+                            }
+                        }
+                    },
+                    "12": {
+                        name: "Respiration",
+                        subtopics: {
+                            "12.1": {
+                                name: "Respiration",
+                                concepts: [
+                                    "Muscle contraction", "Protein synthesis", "Cell division", "Active transport",
+                                    "Growth", "Nerve impulses", "Constant body temperature", "Respiration in yeast",
+                                    "Temperature"
+                                ]
+                            },
+                            "12.2": {
+                                name: "Aerobic Respiration",
+                                concepts: [
+                                    "Oxygen", "Nutrient molecules", "Energy release",
+                                    "Word equation (glucose + oxygen → carbon dioxide + water)",
+                                    "Chemical equation (C6H12O6 + 6O2 → 6CO2 + 6H2O)"
+                                ]
+                            },
+                            "12.3": {
+                                name: "Anaerobic Respiration",
+                                concepts: [
+                                    "Absence of oxygen", "Lesser energy release",
+                                    "Word equation in yeast (glucose → alcohol + carbon dioxide)",
+                                    "Word equation in muscles (glucose → lactic acid)",
+                                    "Chemical equation in yeast (C6H12O6 → 2C2H5OH + 2CO2)",
+                                    "Lactic acid buildup", "Oxygen debt", "Fast heart rate",
+                                    "Lactic acid transport", "Aerobic respiration of lactic acid"
+                                ]
+                            }
+                        }
+                    },
+                    "13": {
+                        name: "Excretion in Humans",
+                        subtopics: {
+                            "13.1": {
+                                name: "Excretion in Humans",
+                                concepts: [
+                                    "Lungs (carbon dioxide)", "Kidneys (urea, excess water, excess ions)",
+                                    "Ureters", "Bladder", "Urethra", "Kidney structure (cortex, medulla)",
+                                    "Nephron", "Glomerulus", "Filtration", "Reabsorption", "Urine formation",
+                                    "Liver (assimilation, urea formation)", "Deamination", "Excretion importance"
+                                ]
+                            }
+                        }
+                    },
+                    "14": {
+                        name: "Coordination and Response",
+                        subtopics: {
+                            "14.1": {
+                                name: "Coordination and Response",
+                                concepts: [
+                                    "Electrical impulses", "Mammalian nervous system", 
+                                    "Central nervous system (CNS)", "Peripheral nervous system (PNS)",
+                                    "Coordination", "Regulation", "Sensory neurones", "Relay neurones",
+                                    "Motor neurones", "Reflex arc", "Receptor", "Effector", "Reflex action",
+                                    "Synapse", "Neurotransmitter molecules", "Synaptic gap", "Receptor proteins"
+                                ]
+                            },
+                            "14.2": {
+                                name: "Sense Organs",
+                                concepts: [
+                                    "Receptor cells", "Stimuli (light, sound, touch, temperature, chemicals)",
+                                    "Eye (cornea, iris, pupil, lens, retina, optic nerve, blind spot)",
+                                    "Pupil reflex", "Circular muscles", "Radial muscles", "Accommodation",
+                                    "Ciliary muscles", "Suspensory ligaments", "Rods", "Cones", "Fovea"
+                                ]
+                            },
+                            "14.3": {
+                                name: "Hormones",
+                                concepts: [
+                                    "Chemical substances", "Endocrine glands (adrenal glands, pancreas, testes, ovaries)",
+                                    "Adrenaline (fight or flight)", "Insulin", "Testosterone", "Oestrogen",
+                                    "Nervous control vs. hormonal control", "Glucagon", "Metabolic activity",
+                                    "Blood glucose concentration"
+                                ]
+                            },
+                            "14.4": {
+                                name: "Homeostasis",
+                                concepts: [
+                                    "Constant internal environment", "Blood glucose concentration", "Insulin", 
+                                    "Glucagon", "Liver", "Negative feedback", "Type 1 diabetes",
+                                    "Skin (hairs, hair erector muscles, sweat glands, receptors, sensory neurones, blood vessels, fatty tissue)",
+                                    "Body temperature (insulation, sweating, shivering, vasodilation, vasoconstriction)"
+                                ]
+                            },
+                            "14.5": {
+                                name: "Tropic Responses",
+                                concepts: [
+                                    "Gravitropism", "Phototropism", "Shoots and roots", "Auxin", "Cell elongation"
+                                ]
+                            }
+                        }
+                    },
+                    "15": {
+                        name: "Drugs",
+                        subtopics: {
+                            "15.1": {
+                                name: "Drugs",
+                                concepts: [
+                                    "Antibiotics", "Bacterial infections", "Antibiotic resistance (MRSA)",
+                                    "Viruses", "Essential use of antibiotics"
+                                ]
+                            }
+                        }
+                    },
+                    "16": {
+                        name: "Reproduction",
+                        subtopics: {
+                            "16.1": {
+                                name: "Asexual Reproduction",
+                                concepts: [
+                                    "Genetically identical offspring", "Single parent", "Crop production"
+                                ]
+                            },
+                            "16.2": {
+                                name: "Sexual Reproduction",
+                                concepts: [
+                                    "Fusion of nuclei", "Gametes", "Zygote", "Haploid", "Diploid"
+                                ]
+                            },
+                            "16.3": {
+                                name: "Sexual Reproduction in Plants",
+                                concepts: [
+                                    "Insect-pollinated flower (sepals, petals, stamens, filaments, anthers, carpels, style, stigma, ovary, ovules)",
+                                    "Wind-pollinated flower (anthers, stigmas)",
+                                    "Pollen grains (insect-pollinated, wind-pollinated)",
+                                    "Pollination (self-pollination, cross-pollination)",
+                                    "Structural adaptations (insect-pollinated, wind-pollinated)",
+                                    "Germination (water, oxygen, temperature)",
+                                    "Pollen tube", "Fertilisation"
+                                ]
+                            },
+                            "16.4": {
+                                name: "Sexual Reproduction in Humans",
+                                concepts: [
+                                    "Male reproductive system (testes, scrotum, sperm ducts, prostate gland, urethra, penis)",
+                                    "Female reproductive system (ovaries, oviducts, uterus, cervix, vagina)",
+                                    "Fertilisation (sperm, egg cell)", "Zygote", "Embryo",
+                                    "Fetus development (umbilical cord, placenta, amniotic sac, amniotic fluid)",
+                                    "Sperm (flagellum, mitochondria, enzymes)",
+                                    "Egg cells (energy stores, jelly coat)"
+                                ]
+                            },
+                            "16.5": {
+                                name: "Sexual Hormones in Humans",
+                                concepts: [
+                                    "Testosterone", "Oestrogen", "Secondary sexual characteristics",
+                                    "Menstrual cycle", "Ovaries", "Progesterone", "Pregnancy"
+                                ]
+                            },
+                            "16.6": {
+                                name: "Sexually Transmitted Infections",
+                                concepts: [
+                                    "HIV", "AIDS", "Transmission", "Spread control"
+                                ]
+                            }
+                        }
+                    },
+                    "17": {
+                        name: "Inheritance",
+                        subtopics: {
+                            "17.1": {
+                                name: "Chromosomes, Genes, and Proteins",
+                                concepts: [
+                                    "Chromosomes", "DNA", "Genes", "Alleles", "Sex chromosomes (X and Y)",
+                                    "Proteins", "Messenger RNA (mRNA)", "Ribosomes", "Amino acids",
+                                    "Haploid nucleus", "Diploid nucleus"
+                                ]
+                            },
+                            "17.2": {
+                                name: "Mitosis",
+                                concepts: [
+                                    "Nuclear division", "Growth", "Tissue repair", "Cell replacement",
+                                    "Asexual reproduction", "Chromosome replication", "Stem cells"
+                                ]
+                            },
+                            "17.3": {
+                                name: "Meiosis",
+                                concepts: [
+                                    "Gametes", "Reduction division", "Genetic variation"
+                                ]
+                            },
+                            "17.4": {
+                                name: "Monohybrid Inheritance",
+                                concepts: [
+                                    "Genetic information", "Genotype", "Phenotype", "Homozygous", "Heterozygous",
+                                    "Dominant allele", "Recessive allele", "Pedigree diagrams", "Punnett squares",
+                                    "Codominance", "ABO blood groups", "Sex-linked characteristics",
+                                    "Red-green color blindness"
+                                ]
+                            }
+                        }
+                    },
+                    "18": {
+                        name: "Variation and Selection",
+                        subtopics: {
+                            "18.1": {
+                                name: "Variation",
+                                concepts: [
+                                    "Continuous variation", "Discontinuous variation", "Mutation", "Alleles",
+                                    "Ionising radiation", "Gene mutation", "Meiosis", "Random mating",
+                                    "Random fertilisation"
+                                ]
+                            },
+                            "18.2": {
+                                name: "Adaptive Features",
+                                concepts: [
+                                    "Inherited features", "Survival and reproduction", "Hydrophytes", "Xerophytes"
+                                ]
+                            },
+                            "18.3": {
+                                name: "Selection",
+                                concepts: [
+                                    "Natural selection", "Genetic variation", "Struggle for survival",
+                                    "Selective breeding", "Adaptation", "Antibiotic resistance"
+                                ]
+                            }
+                        }
+                    },
+                    "19": {
+                        name: "Organisms and Their Environment",
+                        subtopics: {
+                            "19.1": {
+                                name: "Energy Flow",
+                                concepts: [
+                                    "Sun", "Energy transfer", "Chemical energy", "Environment"
+                                ]
+                            },
+                            "19.2": {
+                                name: "Food Chains and Food Webs",
+                                concepts: [
+                                    "Producers", "Consumers", "Herbivores", "Carnivores", "Decomposers",
+                                    "Pyramids of numbers", "Pyramids of biomass", "Trophic levels", "Energy efficiency"
+                                ]
+                            },
+                            "19.3": {
+                                name: "Nutrient Cycles",
+                                concepts: [
+                                    "Carbon cycle (photosynthesis, respiration, feeding, decomposition, fossil fuels, combustion)",
+                                    "Nitrogen cycle (decomposition, nitrification, nitrogen fixation, denitrification)"
+                                ]
+                            },
+                            "19.4": {
+                                name: "Populations",
+                                concepts: [
+                                    "Population", "Community", "Ecosystem", "Population growth", "Food supply",
+                                    "Competition", "Predation", "Disease"
+                                ]
+                            }
+                        }
+                    },
+                    "20": {
+                        name: "Human Influences on Ecosystems",
+                        subtopics: {
+                            "20.1": {
+                                name: "Food Supply",
+                                concepts: [
+                                    "Agricultural machinery", "Chemical fertilisers", "Insecticides", "Herbicides",
+                                    "Selective breeding", "Monocultures", "Intensive livestock production"
+                                ]
+                            },
+                            "20.2": {
+                                name: "Habitat Destruction",
+                                concepts: [
+                                    "Biodiversity", "Habitat destruction", "Food webs", "Deforestation",
+                                    "Extinction", "Soil erosion", "Flooding", "Carbon dioxide increase"
+                                ]
+                            },
+                            "20.3": {
+                                name: "Pollution",
+                                concepts: [
+                                    "Untreated sewage", "Fertiliser runoff", "Non-biodegradable plastics",
+                                    "Methane", "Carbon dioxide", "Enhanced greenhouse effect", "Eutrophication"
+                                ]
+                            },
+                            "20.4": {
+                                name: "Conservation",
+                                concepts: [
+                                    "Conservation strategies", "Species extinction prevention", "Habitat protection",
+                                    "Sustainable resource use", "Captive breeding programs", "Seed banks", "Reforestation"
+                                ]
+                            }
+                        }
+                    },
+                    "21": {
+                        name: "Biotechnology and Genetic Modification",
+                        subtopics: {
+                            "21.1": {
+                                name: "Biotechnology",
+                                concepts: [
+                                    "Enzymes", "Microorganisms", "Industrial processes", "Genetic modification",
+                                    "Insulin production", "Human gene insertion", "Recombinant DNA"
+                                ]
+                            },
+                            "21.2": {
+                                name: "Genetic Modification",
+                                concepts: [
+                                    "Genetic modification techniques", "Recombinant DNA technology", "Gene insertion",
+                                    "Gene cloning", "Transgenic organisms", "Genetically modified crops",
+                                    "Ethical considerations"
+                                ]
+                            },
+                            "21.3": {
+                                name: "Benefits and Risks of Genetic Modification",
+                                concepts: [
+                                    "Agricultural benefits", "Environmental impacts", "Health risks",
+                                    "Economic considerations", "Regulatory frameworks", "Public perception",
+                                    "Biodiversity impact"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            chemverse: {
+                name: "Chemverse",
+                color: "yellow",
+                icon: "fa-flask",
+                topics: {
+                    "1": {
+                        name: "States of Matter",
+                        subtopics: {
+                            "1.1": {
+                                name: "Solids, liquids, and gases",
+                                concepts: [
+                                    "Solids", "Liquids", "Gases", "Melting", "Boiling", "Evaporating", "Freezing", 
+                                    "Condensing", "Particle separation", "Particle arrangement", "Particle motion", 
+                                    "Effects of temperature on gases", "Effects of pressure on gases", 
+                                    "Kinetic particle theory", "Heating curves", "Cooling curves"
+                                ]
+                            },
+                            "1.2": {
+                                name: "Diffusion",
+                                concepts: [
+                                    "Diffusion", "Kinetic particle theory", "Relative molecular mass", "Rate of diffusion"
+                                ]
+                            }
+                        }
+                    },
+                    "2": {
+                        name: "Atoms, Elements, and Compounds",
+                        subtopics: {
+                            "2.1": {
+                                name: "Elements, compounds, and mixtures",
+                                concepts: [
+                                    "Elements", "Compounds", "Mixtures"
+                                ]
+                            },
+                            "2.2": {
+                                name: "Atomic structure and the Periodic Table",
+                                concepts: [
+                                    "Structure of the atom", "Protons", "Neutrons", "Electrons", "Shells", 
+                                    "Proton number", "Atomic number", "Mass number", "Nucleon number", 
+                                    "Electronic configuration", "Group VIII noble gases", "Outer shell electrons", 
+                                    "Electron shells and periods"
+                                ]
+                            },
+                            "2.3": {
+                                name: "Isotopes",
+                                concepts: [
+                                    "Isotopes", "Chemical properties", "Relative atomic mass", "Abundances of isotopes"
+                                ]
+                            },
+                            "2.4": {
+                                name: "Ions and ionic bonds",
+                                concepts: [
+                                    "Positive ions (Cations)", "Negative ions (Anions)", "Ionic bonds", 
+                                    "Electrostatic attraction", "Dot-and-cross diagrams", 
+                                    "Properties of ionic compounds", "High melting points", "High boiling points", 
+                                    "Electrical conductivity (aqueous)", "Electrical conductivity (molten)", 
+                                    "Electrical conductivity (solid)", "Giant lattice structure"
+                                ]
+                            },
+                            "2.5": {
+                                name: "Simple molecules and covalent bonds",
+                                concepts: [
+                                    "Covalent bonds", "Noble gas electronic configurations", "Simple molecules", 
+                                    "H2", "Cl2", "H2O", "CH4", "NH3", "HCl", "Properties of simple molecular compounds", 
+                                    "Low melting points", "Low boiling points", "Poor electrical conductivity", 
+                                    "CH3OH", "C2H4", "O2", "CO2", "N2", "Intermolecular forces"
+                                ]
+                            },
+                            "2.6": {
+                                name: "Giant covalent structures",
+                                concepts: [
+                                    "Graphite", "Diamond", "Silicon(IV) oxide (SiO2)", "Lubricant (Graphite)", 
+                                    "Electrode (Graphite)", "Cutting tools (Diamond)"
+                                ]
+                            },
+                            "2.7": {
+                                name: "Metallic bonding",
+                                concepts: [
+                                    "Electrostatic attraction", "Giant metallic lattice", "Delocalised electrons", 
+                                    "Electrical conductivity (Metals)", "Malleability", "Ductility"
+                                ]
+                            }
+                        }
+                    },
+                    "3": {
+                        name: "Stoichiometry",
+                        subtopics: {
+                            "3.1": {
+                                name: "Formulae",
+                                concepts: [
+                                    "Formulae of elements", "Formulae of compounds", "Molecular formula", 
+                                    "Relative numbers of atoms", "Word equations", "Symbol equations", 
+                                    "State symbols", "Empirical formula", "Ionic compounds", "Charges on ions", 
+                                    "Symbol equations", "Ionic equations", "Stoichiometric equations"
+                                ]
+                            },
+                            "3.2": {
+                                name: "Relative masses of atoms and molecules",
+                                concepts: [
+                                    "Relative atomic mass (Ar)", "Relative molecular mass (Mr)", 
+                                    "Relative formula mass (Mr)", "Simple proportions", "Mole concept"
+                                ]
+                            },
+                            "3.3": {
+                                name: "The mole and the Avogadro constant",
+                                concepts: [
+                                    "Concentration (g/dm³)", "Concentration (mol/dm³)", "Mole (mol)", 
+                                    "Avogadro constant", "Molar gas volume", "Reacting masses", 
+                                    "Limiting reactants", "Volumes of gases", "Titration", "Empirical formulae", 
+                                    "Molecular formulae", "Percentage yield", "Percentage composition by mass", 
+                                    "Percentage purity"
+                                ]
+                            }
+                        }
+                    },
+                    "4": {
+                        name: "Electrochemistry",
+                        subtopics: {
+                            "4.1": {
+                                name: "Electrolysis",
+                                concepts: [
+                                    "Electrolysis", "Ionic compound", "Anode", "Cathode", "Electrolyte", 
+                                    "Electrons", "External circuit", "Oxidation (Anode)", "Reduction (Cathode)", 
+                                    "Molten lead(II) bromide", "Aqueous sodium chloride", "Sulfuric acid (Dilute)", 
+                                    "Platinum electrodes", "Carbon electrodes", "Metal formation", "Hydrogen formation", 
+                                    "Non-metals at anode", "Binary compound", "Electroplating", "Appearance", 
+                                    "Corrosion resistance", "Copper(II) sulfate", "Inert carbon/graphite electrodes", 
+                                    "Copper electrodes", "Halide compound", "Aqueous solution", "Ionic half-equations"
+                                ]
+                            },
+                            "4.2": {
+                                name: "Hydrogen–oxygen fuel cells",
+                                concepts: [
+                                    "Hydrogen–oxygen fuel cells", "Electricity production", "Water as a product", 
+                                    "Advantages of fuel cells", "Disadvantages of fuel cells", 
+                                    "Comparison with gasoline/petrol engines"
+                                ]
+                            }
+                        }
+                    },
+                    "5": {
+                        name: "Chemical Energetics",
+                        subtopics: {
+                            "5.1": {
+                                name: "Exothermic and endothermic reactions",
+                                concepts: [
+                                    "Exothermic reactions", "Endothermic reactions", "Reaction pathway diagrams", 
+                                    "Thermal energy transfer", "Enthalpy change (ΔH)", "Activation energy (Ea)", 
+                                    "Bond breaking", "Bond making", "Enthalpy change calculation", "Bond energies"
+                                ]
+                            }
+                        }
+                    },
+                    "6": {
+                        name: "Chemical Reactions",
+                        subtopics: {
+                            "6.1": {
+                                name: "Physical and chemical changes",
+                                concepts: [
+                                    "Physical changes", "Chemical changes", 
+                                    "Differences between physical and chemical changes"
+                                ]
+                            },
+                            "6.2": {
+                                name: "Rate of reaction",
+                                concepts: [
+                                    "Rate of reaction", "Concentration of solutions", "Pressure of gases", 
+                                    "Surface area of solids", "Temperature", "Catalysts", "Enzymes", 
+                                    "Reaction rate experiments", "Graph interpretation", "Collision theory", 
+                                    "Particle volume", "Collision frequency", "Kinetic energy of particles", 
+                                    "Activation energy", "Rate of reaction using collision theory", 
+                                    "Catalyst effect on activation energy", "Reaction method evaluation"
+                                ]
+                            },
+                            "6.3": {
+                                name: "Reversible reactions and equilibrium",
+                                concepts: [
+                                    "Reversible reactions", "Hydrated compounds", "Anhydrous compounds", 
+                                    "Copper(II) sulfate", "Cobalt(II) chloride", "Equilibrium in a closed system", 
+                                    "Forward reaction rate", "Reverse reaction rate", "Concentrations at equilibrium", 
+                                    "Temperature effect on equilibrium", "Pressure effect on equilibrium", 
+                                    "Concentration effect on equilibrium", "Catalyst effect on equilibrium", 
+                                    "Ammonia production (Haber process)", "Hydrogen source (Methane)", 
+                                    "Nitrogen source (Air)", "Haber process conditions", 
+                                    "Sulfur dioxide to sulfur trioxide conversion (Contact process)", 
+                                    "Sulfur dioxide sources (Burning sulfur)", "Sulfide ores", 
+                                    "Contact process conditions", "Vanadium(V) oxide catalyst"
+                                ]
+                            },
+                            "6.4": {
+                                name: "Redox",
+                                concepts: [
+                                    "Oxidation number", "Redox reactions", "Oxidation (Oxygen gain)", 
+                                    "Reduction (Oxygen loss)", "Redox identification (Oxygen gain/loss)", 
+                                    "Oxidation (Electron loss)", "Reduction (Electron gain)", 
+                                    "Redox reactions using electron gain/loss", "Oxidation number rules", 
+                                    "Oxidation number in monatomic ions", "Sum of oxidation numbers in compounds", 
+                                    "Sum of oxidation numbers in ions", "Redox reactions by color changes", 
+                                    "Acidified potassium manganate(VII)", "Aqueous potassium iodide", 
+                                    "Oxidising agents", "Reducing agents"
+                                ]
+                            }
+                        }
+                    },
+                    "7": {
+                        name: "Acids, Bases, and Salts",
+                        subtopics: {
+                            "7.1": {
+                                name: "The Characteristic Properties of Acids and Bases",
+                                concepts: [
+                                    "Metals", "Bases", "Carbonates", "Litmus", "Thymolphthalein", "Methyl orange", 
+                                    "Oxides of metals", "Oxides of non-metals", "Aqueous solutions of acids (H+ ions)", 
+                                    "Aqueous solutions of alkalis (OH- ions)", "Hydrogen ion concentration", 
+                                    "Neutrality", "Relative acidity", "Relative alkalinity", 
+                                    "Universal indicator paper"
+                                ]
+                            },
+                            "7.2": {
+                                name: "Oxides",
+                                concepts: [
+                                    "Acidic oxides", "Basic oxides", "Amphoteric oxides", "Neutral oxides"
+                                ]
+                            },
+                            "7.3": {
+                                name: "Preparation of Salts",
+                                concepts: [
+                                    "Titration", "Precipitation", "Crystallisation", "Soluble salts", 
+                                    "Insoluble salts", "Hydrated salts", "Anhydrous salts"
+                                ]
+                            }
+                        }
+                    },
+                    "8": {
+                        name: "The Periodic Table",
+                        subtopics: {
+                            "8.1": {
+                                name: "Periodic Trends",
+                                concepts: [
+                                    "Periods", "Groups", "Metallic character", "Non-metallic character", 
+                                    "Group number", "Valency", "Chemical properties", "Physical properties", 
+                                    "Electronic configuration"
+                                ]
+                            },
+                            "8.2": {
+                                name: "Group I Properties",
+                                concepts: [
+                                    "Lithium", "Sodium", "Potassium", "Rubidium", "Cesium", "Francium", 
+                                    "Reactivity trend", "Melting point trend", "Density trend"
+                                ]
+                            },
+                            "8.3": {
+                                name: "Group VII Properties",
+                                concepts: [
+                                    "Chlorine", "Bromine", "Iodine", "Fluorine", "Astatine", "Reactivity trend", 
+                                    "Displacement reactions", "Physical states"
+                                ]
+                            },
+                            "8.4": {
+                                name: "Transition Elements",
+                                concepts: [
+                                    "High melting points", "High densities", "Formation of colored compounds", 
+                                    "Catalytic properties"
+                                ]
+                            },
+                            "8.5": {
+                                name: "Noble Gases",
+                                concepts: [
+                                    "Helium", "Neon", "Argon", "Krypton", "Xenon", "Radon", "Inertness", 
+                                    "Monatomic gases"
+                                ]
+                            }
+                        }
+                    },
+                    "9": {
+                        name: "Metals",
+                        subtopics: {
+                            "9.1": {
+                                name: "Properties of Metals",
+                                concepts: [
+                                    "Thermal conductivity", "Electrical conductivity", "Malleability", "Ductility", 
+                                    "High melting points", "High boiling points"
+                                ]
+                            },
+                            "9.2": {
+                                name: "Uses of Metals",
+                                concepts: [
+                                    "Aluminium (Aircraft, cables)", "Copper (Wiring)", "Steel (Construction, tools)", 
+                                    "Gold (Jewelry, electronics)", "Silver (Jewelry, mirrors)", 
+                                    "Alloys (Brass, stainless steel)"
+                                ]
+                            },
+                            "9.3": {
+                                name: "Reactivity Series",
+                                concepts: [
+                                    "Potassium", "Sodium", "Calcium", "Magnesium", "Aluminium", "Zinc", "Iron", 
+                                    "Copper", "Silver", "Gold", "Reactivity with water", "Reactivity with acids", 
+                                    "Reactivity with oxygen"
+                                ]
+                            },
+                            "9.4": {
+                                name: "Extraction of Metals",
+                                concepts: [
+                                    "Electrolysis", "Reduction with carbon", "Blast furnace", "Aluminium extraction", 
+                                    "Iron extraction", "Purification of copper", "Environmental impact"
+                                ]
+                            },
+                            "9.5": {
+                                name: "Corrosion of Metals",
+                                concepts: [
+                                    "Rusting of iron", "Prevention methods (Painting, galvanizing)", 
+                                    "Sacrificial protection", "Oxidation", "Redox reactions"
+                                ]
+                            }
+                        }
+                    },
+                    "10": {
+                        name: "Chemistry of the Environment",
+                        subtopics: {
+                            "10.1": {
+                                name: "Water",
+                                concepts: [
+                                    "Water cycle", "Purification methods (Filtration, distillation)", 
+                                    "Potable water", "Testing for water", 
+                                    "Environmental pollution (Eutrophication, acid rain)"
+                                ]
+                            },
+                            "10.2": {
+                                name: "Air Quality",
+                                concepts: [
+                                    "Composition of air", "Air pollutants (CO2, CO, SO2, NOx, particulates)", 
+                                    "Global warming", "Ozone depletion", "Acid rain"
+                                ]
+                            },
+                            "10.3": {
+                                name: "Nitrogen Cycle and Fertilisers",
+                                concepts: [
+                                    "Nitrogen fixation", "Nitrification", "Denitrification", "Use of fertilisers", 
+                                    "Environmental impact of fertilisers"
+                                ]
+                            }
+                        }
+                    },
+                    "11": {
+                        name: "Organic Chemistry",
+                        subtopics: {
+                            "11.1": {
+                                name: "Alkanes",
+                                concepts: [
+                                    "Methane", "Ethane", "Propane", "Butane", "General formula CnH2n+2", 
+                                    "Combustion", "Substitution reactions with chlorine"
+                                ]
+                            },
+                            "11.2": {
+                                name: "Alkenes",
+                                concepts: [
+                                    "Ethene", "Propene", "Butene", "General formula CnH2n", 
+                                    "Addition reactions (Hydrogenation, halogenation, hydration)", "Polymerization"
+                                ]
+                            },
+                            "11.3": {
+                                name: "Alcohols",
+                                concepts: [
+                                    "Ethanol", "Propanol", "Butanol", "Fermentation", "Hydration of ethene", 
+                                    "Uses of alcohols (Fuel, solvents, alcoholic beverages)"
+                                ]
+                            },
+                            "11.4": {
+                                name: "Carboxylic Acids",
+                                concepts: [
+                                    "Ethanoic acid", "Propanoic acid", "Butanoic acid", "Esterification", 
+                                    "Reactions with metals", "Reactions with carbonates"
+                                ]
+                            },
+                            "11.5": {
+                                name: "Polymers",
+                                concepts: [
+                                    "Addition polymerization", "Condensation polymerization", "Polyethylene", 
+                                    "Polypropylene", "Nylon", "PET (Polyethylene terephthalate)", 
+                                    "Environmental impact of plastics"
+                                ]
+                            },
+                            "11.6": {
+                                name: "Fats and Oils",
+                                concepts: [
+                                    "Triglycerides", "Saturated fats", "Unsaturated fats", "Hydrogenation", 
+                                    "Saponification", "Soaps"
+                                ]
+                            },
+                            "11.7": {
+                                name: "Proteins",
+                                concepts: [
+                                    "Amino acids", "Peptide bonds", "Protein structure (Primary, Secondary, Tertiary)", 
+                                    "Denaturation"
+                                ]
+                            },
+                            "11.8": {
+                                name: "Carbohydrates",
+                                concepts: [
+                                    "Monosaccharides (Glucose)", "Disaccharides (Sucrose)", 
+                                    "Polysaccharides (Starch, Cellulose)", "Hydrolysis"
+                                ]
+                            }
+                        }
+                    },
+                    "12": {
+                        name: "Experimental Techniques and Chemical Analysis",
+                        subtopics: {
+                            "12.1": {
+                                name: "Chromatography",
+                                concepts: [
+                                    "Paper chromatography", "Thin-layer chromatography", "Rf value", 
+                                    "Separation of mixtures"
+                                ]
+                            },
+                            "12.2": {
+                                name: "Qualitative Analysis",
+                                concepts: [
+                                    "Flame tests", "Test for cations (NH4+, Cu2+, Fe2+, Fe3+)", 
+                                    "Test for anions (Cl-, SO42-, CO32-)", 
+                                    "Test for gases (H2, O2, CO2, NH3, Cl2)"
+                                ]
+                            },
+                            "12.3": {
+                                name: "Quantitative Analysis",
+                                concepts: [
+                                    "Titration", "Volumetric analysis", "Back titration", "Gravimetric analysis"
+                                ]
+                            },
+                            "12.4": {
+                                name: "Instrumental Analysis",
+                                concepts: [
+                                    "Spectrophotometry", "Mass spectrometry", "Infrared spectroscopy", 
+                                    "Nuclear magnetic resonance (NMR)"
+                                ]
+                            },
+                            "12.5": {
+                                name: "Electrochemical Cells",
+                                concepts: [
+                                    "Galvanic cells", "Electrolytic cells", "Standard electrode potential", 
+                                    "Applications (Batteries, Electroplating)"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            atomverse: {
+                name: "Atomverse",
+                color: "blue",
+                icon: "fa-atom",
+                topics: {
+                    "1": {
+                        name: "Motion, Forces, and Energy",
+                        subtopics: {
+                            "1.1": {
+                                name: "Physical Quantities and Measurement Techniques",
+                                concepts: [
+                                    "Rulers", "Measuring cylinders", "Clocks", "Digital timers", 
+                                    "Average value (small distance, short interval of time)", "Period of oscillation", 
+                                    "Pendulum", "Scalars (distance, speed, time, mass, energy, temperature)", 
+                                    "Vectors (force, weight, velocity, acceleration, momentum, electric field strength, gravitational field strength)", 
+                                    "Resultant of two vectors (at right angles)", "Calculation of vectors", 
+                                    "Graphical determination of vectors"
+                                ]
+                            },
+                            "1.2": {
+                                name: "Motion",
+                                concepts: [
+                                    "Speed (distance traveled per unit time)", "Velocity (speed in a given direction)", 
+                                    "Equation of average speed", "Distance-time graphs", "Speed-time graphs", 
+                                    "Gradient calculation (distance-time graph)", "Area under speed-time graph", 
+                                    "Acceleration of free fall (g ≈ 9.8 m/s²)", 
+                                    "Acceleration (change in velocity per unit time)", "Equation of acceleration", 
+                                    "Constant acceleration", "Changing acceleration", 
+                                    "Deceleration (negative acceleration)", 
+                                    "Motion in a uniform gravitational field (with and without resistance)", 
+                                    "Terminal velocity"
+                                ]
+                            },
+                            "1.3": {
+                                name: "Mass and Weight",
+                                concepts: [
+                                    "Mass (quantity of matter)", "Weight (gravitational force)", 
+                                    "Gravitational field strength", "Equation for gravitational field strength", 
+                                    "Comparison of weights using a balance"
+                                ]
+                            },
+                            "1.4": {
+                                name: "Density",
+                                concepts: [
+                                    "Density (mass per unit volume)", "Equation for density", 
+                                    "Determination of density (liquid, regular solid, irregular solid)", 
+                                    "Volume by displacement", "Floating based on density data", 
+                                    "Floating of liquids based on density data"
+                                ]
+                            },
+                            "1.5": {
+                                name: "Forces",
+                                concepts: [
+                                    "Effects of forces (size and shape changes)", 
+                                    "Load-extension graphs (elastic solid)", 
+                                    "Experimental procedures (load-extension)", 
+                                    "Resultant of forces (same straight line)", "Motion and resultant force", 
+                                    "Velocity changes (direction and speed)", 
+                                    "Spring constant (force per unit extension)", 
+                                    "Equation for spring constant", 
+                                    "Limit of proportionality (load-extension graph)", 
+                                    "Equation F=maF = maF=ma", "Circular motion due to a perpendicular force", 
+                                    "Speed and force relationship (circular motion)", 
+                                    "Radius and force relationship (circular motion)", 
+                                    "Mass and force relationship (circular motion)", 
+                                    "Friction (solid friction, drag in liquid, drag in gas)", 
+                                    "Moment of force (turning effect)", "Equation for moment", 
+                                    "Principle of moments", "Equilibrium condition (resultant force and moment)", 
+                                    "Centre of gravity", "Stability of objects"
+                                ]
+                            },
+                            "1.6": {
+                                name: "Momentum",
+                                concepts: [
+                                    "Momentum (mass × velocity)", "Equation for momentum", 
+                                    "Impulse (force × time)", "Equation for impulse", 
+                                    "Conservation of momentum (one dimension)", 
+                                    "Resultant force (change in momentum per unit time)", 
+                                    "Equation F=ΔpΔtF = \\frac{\\Delta p}{\\Delta t}F=ΔtΔp​"
+                                ]
+                            },
+                            "1.7": {
+                                name: "Energy, Work, and Power",
+                                concepts: [
+                                    "Energy stores (kinetic, gravitational potential, chemical, elastic, nuclear, electrostatic, internal/thermal)", 
+                                    "Energy transfer (mechanical work, electrical work, heating, electromagnetic, sound waves)", 
+                                    "Conservation of energy", "Flow diagrams (energy transfer)", 
+                                    "Equation for kinetic energy", "Equation for gravitational potential energy", 
+                                    "Complex energy conservation examples", "Sankey diagrams", 
+                                    "Work done (mechanical, electrical)", "Equation W=Fd=ΔEW = Fd = \\Delta EW=Fd=ΔE", 
+                                    "Energy resources (chemical energy, biofuels, water, geothermal, nuclear, solar cells, solar panels, wind energy)", 
+                                    "Advantages and disadvantages of energy resources", 
+                                    "Efficiency concept (energy transfer)", "Equation for efficiency", 
+                                    "Power (work done per unit time, energy transferred per unit time)", 
+                                    "Equation for power P=WtP = \\frac{W}{t}P=tW​, P=ΔEtP = \\frac{\\Delta E}{t}P=tΔE​"
+                                ]
+                            },
+                            "1.8": {
+                                name: "Pressure",
+                                concepts: [
+                                    "Pressure (force per unit area)", "Equation for pressure p=FAp = \\frac{F}{A}p=AF​", 
+                                    "Pressure variation (force and area)", 
+                                    "Pressure beneath a liquid surface (depth and density)", 
+                                    "Equation for change in pressure Δp=ρgΔh\\Delta p = \\rho g \\Delta hΔp=ρgΔh"
+                                ]
+                            }
+                        }
+                    },
+                    "2": {
+                        name: "Thermal Physics",
+                        subtopics: {
+                            "2.1": {
+                                name: "Kinetic Particle Model of Matter",
+                                concepts: [
+                                    "2.1.1 States of Matter",
+                                    "Properties of solids", "Properties of liquids", "Properties of gases", 
+                                    "Changes of state (melting, boiling, evaporation, freezing, condensation)",
+                                    "2.1.2 Particle Model",
+                                    "Particle structure (solids, liquids, gases)", 
+                                    "Relationship between particle motion and temperature", 
+                                    "Absolute zero (-273 °C)", "Gas pressure and particle motion", "Brownian motion",
+                                    "2.1.3 Gases and the Absolute Scale of Temperature",
+                                    "Effect of temperature on gas pressure (constant volume)", 
+                                    "Effect of volume on gas pressure (constant temperature)", 
+                                    "Kelvin to Celsius conversion", 
+                                    "Equation T(K)=θ(°C)+273T (\\text{K}) = \\theta (\\text{°C}) + 273T(K)=θ(°C)+273", 
+                                    "Equation pV=constantpV = \\text{constant}pV=constant"
+                                ]
+                            },
+                            "2.2": {
+                                name: "Thermal Properties and Temperature",
+                                concepts: [
+                                    "2.2.1 Thermal Expansion of Solids, Liquids, and Gases",
+                                    "Thermal expansion (qualitative description)", 
+                                    "Everyday applications and consequences", 
+                                    "Particle motion and expansion magnitude",
+                                    "2.2.2 Specific Heat Capacity",
+                                    "Internal energy increase", "Temperature and kinetic energy relation", 
+                                    "Specific heat capacity", 
+                                    "Equation for specific heat capacity c=ΔEmΔθc = \\frac{\\Delta E}{m \\Delta \\theta}c=mΔθΔE​", 
+                                    "Experiments to measure specific heat capacity (solid, liquid)",
+                                    "2.2.3 Melting, Boiling, and Evaporation",
+                                    "Melting (energy input, no temperature change)", 
+                                    "Boiling (energy input, no temperature change)", 
+                                    "Melting and boiling temperatures (water, standard atmospheric pressure)", 
+                                    "Condensation and solidification (particle description)", 
+                                    "Evaporation (escape of energetic particles)", "Cooling effect due to evaporation", 
+                                    "Differences between boiling and evaporation", 
+                                    "Factors affecting evaporation (temperature, surface area, air movement)", 
+                                    "Cooling of an object by evaporating liquid"
+                                ]
+                            },
+                            "2.3": {
+                                name: "Transfer of Thermal Energy",
+                                concepts: [
+                                    "2.3.1 Conduction",
+                                    "Good thermal conductors", "Bad thermal conductors (insulators)", 
+                                    "Conduction in solids (lattice vibrations, delocalised electrons)", 
+                                    "Conduction in gases and liquids (poor due to particle motion)",
+                                    "2.3.2 Convection",
+                                    "Convection in liquids and gases", "Density changes", "Convection experiments",
+                                    "2.3.3 Radiation",
+                                    "Infrared radiation", "Radiation transfer without a medium", 
+                                    "Surface effects on radiation (color, texture)", 
+                                    "Energy transfer balance (constant temperature)", 
+                                    "Earth's temperature and radiation balance", 
+                                    "Radiation experiments (emission, absorption)", 
+                                    "Rate of emission and surface temperature", 
+                                    "Everyday applications of conduction, convection, and radiation"
+                                ]
+                            }
+                        }
+                    },
+                    "3": {
+                        name: "Waves",
+                        subtopics: {
+                            "3.1": {
+                                name: "General Properties of Waves",
+                                concepts: [
+                                    "Energy transfer without matter transfer", 
+                                    "Wave motion (vibrations in ropes, springs, water waves)", 
+                                    "Wave features (wavefront, wavelength, frequency, crest, trough, amplitude, wave speed)", 
+                                    "Equation for wave speed v=fλv = f \\lambdav=fλ", 
+                                    "Transverse waves (vibration direction, examples)", 
+                                    "Longitudinal waves (vibration direction, examples)", "Reflection", "Refraction", 
+                                    "Diffraction", "Ripple tank experiments (reflection, refraction, diffraction)"
+                                ]
+                            },
+                            "3.2": {
+                                name: "Light",
+                                concepts: [
+                                    "3.2.1 Reflection of Light",
+                                    "Normal", "Angle of incidence", "Angle of reflection", 
+                                    "Optical image formation (plane mirror, characteristics)", "Law of reflection",
+                                    "3.2.2 Refraction of Light",
+                                    "Refraction experiment (transparent blocks)", 
+                                    "Passage of light (two media boundaries)", "Critical angle", 
+                                    "Internal reflection", "Total internal reflection",
+                                    "3.2.3 Thin Lenses",
+                                    "Converging lenses", "Diverging lenses", "Focal length", "Principal axis", 
+                                    "Principal focus (focal point)", "Ray diagrams (converging lens, real image)", 
+                                    "Image characteristics (enlarged, same size, diminished, upright, inverted, real, virtual)", 
+                                    "Virtual image formation", "Magnifying glass", 
+                                    "Converging and diverging lenses (correcting vision)",
+                                    "3.2.4 Dispersion of Light",
+                                    "Dispersion (glass prism)", 
+                                    "Visible spectrum (order of colors by frequency, wavelength)", "Monochromatic light"
+                                ]
+                            },
+                            "3.3": {
+                                name: "Electromagnetic Spectrum",
+                                concepts: [
+                                    "Electromagnetic waves", "Speed in a vacuum (all EM waves travel at the same speed)", 
+                                    "Radio waves", "Microwaves", "Infrared", "Visible light", "Ultraviolet", "X-rays", 
+                                    "Gamma rays", "Order of wavelength and frequency", "Uses of electromagnetic waves", 
+                                    "Dangers of exposure to different electromagnetic waves (e.g., microwaves, ultraviolet, X-rays, gamma rays)"
+                                ]
+                            },
+                            "3.4": {
+                                name: "Sound",
+                                concepts: [
+                                    "Longitudinal wave (compression and rarefaction)", 
+                                    "Speed of sound in air, water, and solids", "Reflection of sound (echo)", 
+                                    "Measuring speed of sound", "Loudness and amplitude relationship", 
+                                    "Pitch and frequency relationship", "Human audible range (20 Hz to 20,000 Hz)", 
+                                    "Ultrasound", "Uses of ultrasound (e.g., medical imaging, cleaning, detecting flaws in materials)"
+                                ]
+                            }
+                        }
+                    },
+                    "4": {
+                        name: "Electricity and Magnetism",
+                        subtopics: {
+                            "4.1": {
+                                name: "Simple Phenomena of Magnetism",
+                                concepts: [
+                                    "Magnetic poles (north, south)", "Attraction and repulsion", 
+                                    "Magnetic materials (iron, steel, cobalt, nickel)", "Induced magnetism", 
+                                    "Magnetic field", "Magnetic field lines", "Magnetic properties of iron and steel", 
+                                    "Electromagnets", "Practical uses of electromagnets"
+                                ]
+                            },
+                            "4.2": {
+                                name: "Electrical Quantities",
+                                concepts: [
+                                    "4.2.1 Electric Charge",
+                                    "Positive and negative charges", "Electric field", "Conductors and insulators", 
+                                    "Charging by friction", "Detection of charges", "Practical uses of electrostatics",
+                                    "4.2.2 Current",
+                                    "Flow of electrons", "Conventional current", "Measurement of current (ammeters)", 
+                                    "Direct current (d.c.)", "Alternating current (a.c.)", "Current in metals", 
+                                    "Circuit symbols", "Simple series circuits", "Current in series circuits",
+                                    "4.2.3 Electromotive Force and Potential Difference",
+                                    "Electromotive force (e.m.f.)", "Potential difference (p.d.)", 
+                                    "Measurement of p.d. (voltmeters)", "Energy transfer in circuits",
+                                    "4.2.4 Resistance",
+                                    "Ohm's law", "Factors affecting resistance (length, cross-sectional area, material)", 
+                                    "Resistors in series and parallel", "Variable resistors", 
+                                    "Temperature dependence of resistance"
+                                ]
+                            },
+                            "4.3": {
+                                name: "Electric Circuits",
+                                concepts: [
+                                    "4.3.1 Circuit Diagrams",
+                                    "Symbols for components", "Series circuits", "Parallel circuits", "Mixed circuits",
+                                    "4.3.2 Action of Circuit Components",
+                                    "Switches", "Lamps", "Fuses", "Heaters", "Motors", "Buzzers", 
+                                    "Light-dependent resistors (LDRs)", "Thermistors", "Diodes", 
+                                    "Light-emitting diodes (LEDs)", "Ammeters", "Voltmeters",
+                                    "4.3.3 Series and Parallel Circuits",
+                                    "Combined e.m.f.", "Total resistance", "Potential divider circuits", 
+                                    "Applications of series and parallel circuits"
+                                ]
+                            },
+                            "4.4": {
+                                name: "Electrical Safety",
+                                concepts: [
+                                    "Hazards of electricity", "Fuses and circuit breakers", "Earthing", 
+                                    "Double insulation", "Safety precautions"
+                                ]
+                            },
+                            "4.5": {
+                                name: "Electromagnetic Effects",
+                                concepts: [
+                                    "4.5.1 Electromagnetic Induction",
+                                    "Faraday's law", "Lenz's law", "Induced e.m.f.", "Factors affecting induced e.m.f.",
+                                    "4.5.2 The A.C. Generator",
+                                    "Construction and working principle", "Output waveform", "Factors affecting output",
+                                    "4.5.3 Magnetic Effects of a Current",
+                                    "Magnetic field around a current-carrying conductor", "Right-hand grip rule", 
+                                    "Solenoid and electromagnets", "Applications of the magnetic effect of a current",
+                                    "4.5.4 Force on a Current-Carrying Conductor",
+                                    "Motor effect", "Fleming's left-hand rule", "Factors affecting the force",
+                                    "4.5.5 The D.C. Motor",
+                                    "Construction and working principle", "Commutator", "Applications of D.C. motors",
+                                    "4.5.6 The Transformer",
+                                    "Step-up and step-down transformers", "Transformer equations", 
+                                    "Efficiency of transformers", "Transmission of electricity"
+                                ]
+                            }
+                        }
+                    },
+                    "5": {
+                        name: "Nuclear Physics",
+                        subtopics: {
+                            "5.1": {
+                                name: "The Nuclear Atom",
+                                concepts: [
+                                    "Atomic structure", "Nucleus", "Protons, neutrons, electrons", "Isotopes", 
+                                    "Radioactivity", "Types of radiation (alpha, beta, gamma)"
+                                ]
+                            },
+                            "5.2": {
+                                name: "Radioactivity",
+                                concepts: [
+                                    "5.2.1 Detection of Radioactivity",
+                                    "Geiger-Muller tube", "Background radiation", "Sources of background radiation",
+                                    "5.2.2 Characteristics of the Three Types of Radiation",
+                                    "Penetration power", "Ionization ability", "Deflection by electric and magnetic fields",
+                                    "5.2.3 Half-life",
+                                    "Decay curves", "Calculations of half-life", "Applications of radioactive isotopes",
+                                    "5.2.4 Safety Precautions",
+                                    "Shielding", "Distance and time precautions", 
+                                    "Safe handling and storage of radioactive materials"
+                                ]
+                            }
+                        }
+                    },
+                    "6": {
+                        name: "Space Physics",
+                        subtopics: {
+                            "6.1": {
+                                name: "The Earth and the Solar System",
+                                concepts: [
+                                    "Solar System structure", "Planets, moons, asteroids, comets", "Orbital motion", 
+                                    "Gravitational force"
+                                ]
+                            },
+                            "6.2": {
+                                name: "Stars and the Universe",
+                                concepts: [
+                                    "6.2.1 Stars",
+                                    "Life cycle of stars", "Main sequence stars", "Red giants and white dwarfs", 
+                                    "Supernovae and black holes",
+                                    "6.2.2 The Universe",
+                                    "Galaxies", "The Milky Way", "Expanding Universe", "The Big Bang Theory",
+                                    "6.2.3 The Sun",
+                                    "Structure of the Sun", "Nuclear fusion in the Sun", "Sunspots and solar flares", 
+                                    "The Sun's influence on the Earth"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            mathsverse: {
+                name: "Mathsverse",
+                color: "purple",
+                icon: "fa-square-root-alt",
+                topics: {
+                    "1": {
+                        name: "Number",
+                        subtopics: {
+                            "1.1": {
+                                name: "Types of number",
+                                concepts: [
+                                    "Natural numbers", "Integers", "Prime numbers", "Square numbers", "Cube numbers", 
+                                    "Common factors", "Common multiples", "Rational numbers", "Irrational numbers", 
+                                    "Reciprocals", "Convert numbers to words", "Prime factorization", 
+                                    "Highest common factor", "Lowest common multiple"
+                                ]
+                            },
+                            "1.2": {
+                                name: "Sets",
+                                concepts: [
+                                    "Set notation", "Venn diagrams", "Number of elements", "Complement of set", 
+                                    "Universal set", "Union of sets", "Intersection of sets", "Set definitions"
+                                ]
+                            },
+                            "1.3": {
+                                name: "Powers and roots",
+                                concepts: [
+                                    "Squares", "Square roots", "Cubes", "Cube roots", "Other powers", 
+                                    "Powers of numbers", "Square roots recall", "Cube roots recall"
+                                ]
+                            },
+                            "1.4": {
+                                name: "Fractions decimals percentages",
+                                concepts: [
+                                    "Proper fractions", "Improper fractions", "Mixed numbers", "Decimals", 
+                                    "Percentages", "Equivalence conversion", "Fractions simplification"
+                                ]
+                            },
+                            "1.5": {
+                                name: "Ordering",
+                                concepts: [
+                                    "Order quantities", "Use inequality symbols", "Compare values", 
+                                    "Use =, ≠, >, <, ⩾, ⩽"
+                                ]
+                            },
+                            "1.6": {
+                                name: "The four operations",
+                                concepts: [
+                                    "Addition", "Subtraction", "Multiplication", "Division", "Order of operations", 
+                                    "BODMAS/BIDMAS", "Negative numbers", "Fraction operations", "Decimal operations", 
+                                    "Real-world problems"
+                                ]
+                            },
+                            "1.7": {
+                                name: "Indices I",
+                                concepts: [
+                                    "Positive indices", "Zero index", "Negative indices", "Laws of indices", 
+                                    "Multiply powers", "Divide powers", "Power of power", "Negative powers"
+                                ]
+                            },
+                            "1.8": {
+                                name: "Standard form",
+                                concepts: [
+                                    "A × 10ⁿ format", "Convert to standard form", "Convert from standard form", 
+                                    "Calculate with standard form"
+                                ]
+                            },
+                            "1.9": {
+                                name: "Estimation",
+                                concepts: [
+                                    "Round to accuracy", "Estimate calculations", "Round to decimal places", 
+                                    "Round to significant figures", "Estimate context problems"
+                                ]
+                            },
+                            "1.10": {
+                                name: "Limits of accuracy",
+                                concepts: [
+                                    "Upper bounds", "Lower bounds", "Measurement accuracy", "Rounded data bounds"
+                                ]
+                            },
+                            "1.11": {
+                                name: "Ratio and proportion",
+                                concepts: [
+                                    "Simplest ratio form", "Divide in given ratio", "Proportional reasoning", 
+                                    "Use ratios in context", "Map scales", "Recipe scaling", "Best value comparison"
+                                ]
+                            },
+                            "1.12": {
+                                name: "Rates",
+                                concepts: [
+                                    "Measures of rate", "Hourly rates", "Exchange rates", "Flow rates", 
+                                    "Fuel consumption", "Density", "Population density", "Average speed", 
+                                    "Time distance speed", "Units of rate"
+                                ]
+                            },
+                            "1.13": {
+                                name: "Percentages",
+                                concepts: [
+                                    "Percentage of quantity", "Express as percentage", "Percentage increase", 
+                                    "Percentage decrease", "Simple interest", "Compound interest", 
+                                    "Deposit and discount", "Profit and loss", "Earnings and percentages"
+                                ]
+                            },
+                            "1.14": {
+                                name: "Using a calculator",
+                                concepts: [
+                                    "Efficient calculator use", "Appropriate input", "Interpret display", 
+                                    "Avoid intermediate rounding", "Time entry formats", "Money interpretation"
+                                ]
+                            },
+                            "1.15": {
+                                name: "Time",
+                                concepts: [
+                                    "Units of time", "Time conversions", "24-hour clock", "12-hour clock", 
+                                    "Read clocks", "Read timetables", "Time zones", "Time differences"
+                                ]
+                            },
+                            "1.16": {
+                                name: "Money",
+                                concepts: [
+                                    "Currency", "Financial calculations", "Banking terms", "Shopping math", 
+                                    "Exchange rates", "Price comparisons", "Budgeting", "Income and tax"
+                                ]
+                            },
+                            "1.17": {
+                                name: "Exponential growth and decay",
+                                concepts: [
+                                    "Exponential growth", "Exponential decay", "Population increase", 
+                                    "Population decrease", "Money depreciation", "Bacterial growth", 
+                                    "Model real-life situations", "Use of percentage change"
+                                ]
+                            },
+                            "1.18": {
+                                name: "Surds",
+                                concepts: [
+                                    "Simplify surd expressions", "Recognize irrational numbers", "Combine like surds", 
+                                    "Simplify square roots", "Rationalise denominator", "Multiply conjugate pairs", 
+                                    "Use exact values", "Simplify compound surds"
+                                ]
+                            }
+                        }
+                    },
+                    "2": {
+                        name: "Algebra and graphs",
+                        subtopics: {
+                            "2.1": {
+                                name: "Introduction to algebra",
+                                concepts: [
+                                    "Use letters for numbers", "Substitute into expressions", "Substitute into formulas"
+                                ]
+                            },
+                            "2.2": {
+                                name: "Algebraic manipulation",
+                                concepts: [
+                                    "Collect like terms", "Expand single brackets", "Expand double brackets", 
+                                    "Factorise common factors", "Simplify algebraic expressions", "Factorise fully"
+                                ]
+                            },
+                            "2.3": {
+                                name: "Algebraic fractions",
+                                concepts: [
+                                    "Manipulate algebraic fractions", "Add algebraic fractions", 
+                                    "Subtract algebraic fractions", "Multiply algebraic fractions", 
+                                    "Divide algebraic fractions", "Simplify rational expressions", 
+                                    "Factorise numerator expressions", "Factorise denominator expressions", 
+                                    "Combine algebraic fractions", "Rational expression simplification"
+                                ]
+                            },
+                            "2.4": {
+                                name: "Indices II",
+                                concepts: [
+                                    "Laws of indices", "Powers of variables", "Multiply indices", "Divide indices", 
+                                    "Power of a power", "Negative powers", "Solve index equations", 
+                                    "Simplify index expressions"
+                                ]
+                            },
+                            "2.5": {
+                                name: "Equations",
+                                concepts: [
+                                    "Construct expressions", "Create linear equations", "Solve linear equations", 
+                                    "Form simultaneous equations", "Solve simultaneous equations", 
+                                    "Rearrange simple formulas", "Subject appears once", "No roots or powers"
+                                ]
+                            },
+                            "2.6": {
+                                name: "Inequalities",
+                                concepts: [
+                                    "Represent inequalities", "Interpret inequalities", "Number line open circle", 
+                                    "Number line closed circle", "Combined inequalities"
+                                ]
+                            },
+                            "2.7": {
+                                name: "Sequences",
+                                concepts: [
+                                    "Continue number sequences", "Recognize sequence patterns", "Term-to-term rule", 
+                                    "Linear nth term", "Quadratic nth term", "Cubic nth term", "Find next terms", 
+                                    "Find general formula"
+                                ]
+                            },
+                            "2.8": {
+                                name: "Proportion",
+                                concepts: [
+                                    "Direct proportion", "Inverse proportion", "Linear proportion", "Square proportion", 
+                                    "Square root proportion", "Cube proportion", "Cube root proportion", 
+                                    "Use of proportional symbol", "Find unknown quantities", 
+                                    "Algebraic proportion problems"
+                                ]
+                            },
+                            "2.9": {
+                                name: "Graphs in practical situations",
+                                concepts: [
+                                    "Travel graphs", "Conversion graphs", "Interpret real-life graphs", 
+                                    "Draw distance-time graphs", "Gradient as rate of change"
+                                ]
+                            },
+                            "2.10": {
+                                name: "Graphs of functions",
+                                concepts: [
+                                    "Table of values", "Graph linear functions", "Graph reciprocal functions", 
+                                    "Graph quadratic functions", "Find roots graphically", 
+                                    "Intersection of line and curve"
+                                ]
+                            },
+                            "2.11": {
+                                name: "Sketching curves",
+                                concepts: [
+                                    "Sketch linear graphs", "Sketch quadratic graphs", "Interpret linear graphs", 
+                                    "Interpret quadratic graphs", "Use symmetry", "Use roots"
+                                ]
+                            },
+                            "2.12": {
+                                name: "Differentiation",
+                                concepts: [
+                                    "Estimate curve gradients", "Draw tangent to curve", "Derivative of ax^n", 
+                                    "Differentiate polynomial functions", "Differentiate sum terms", 
+                                    "Find stationary points", "Identify turning points", "Maxima and minima", 
+                                    "Second derivative use", "Gradient inspection method"
+                                ]
+                            },
+                            "2.13": {
+                                name: "Functions",
+                                concepts: [
+                                    "Function notation", "Understand domain", "Understand range", 
+                                    "Find inverse functions", "Composite functions", "Form gf(x) = g(f(x))", 
+                                    "Map functions", "Function operations", "Simple function rules", 
+                                    "Composite function examples"
+                                ]
+                            }
+                        }
+                    },
+                    "3": {
+                        name: "Coordinate geometry",
+                        subtopics: {
+                            "3.1": {
+                                name: "Coordinates",
+                                concepts: [
+                                    "Use Cartesian coordinates", "Interpret coordinates", "Two-dimensional coordinates", 
+                                    "Plot points from coordinates"
+                                ]
+                            },
+                            "3.2": {
+                                name: "Drawing linear graphs",
+                                concepts: [
+                                    "Draw straight-line graphs", "Graph linear equations", "Use y = mx + c form", 
+                                    "Create graphs from tables", "Linear equation plotting"
+                                ]
+                            },
+                            "3.3": {
+                                name: "Gradient of linear graphs",
+                                concepts: [
+                                    "Find gradient from graph", "Determine slope from grid", 
+                                    "Gradient from two points", "Rise over run", "Positive and negative gradients"
+                                ]
+                            },
+                            "3.4": {
+                                name: "Length and midpoint",
+                                concepts: [
+                                    "Distance between points", "Use distance formula", "Coordinates of midpoint", 
+                                    "Midpoint calculation", "Line segment length", "Coordinate geometry length", 
+                                    "Average x and y values"
+                                ]
+                            },
+                            "3.5": {
+                                name: "Equations of linear graphs",
+                                concepts: [
+                                    "Interpret line equations", "Find equation from graph", 
+                                    "Identify gradient from equation", "Identify y-intercept from equation", 
+                                    "Write simplified line equations", "Use x = k for vertical lines", 
+                                    "Use y = mx + c form"
+                                ]
+                            },
+                            "3.6": {
+                                name: "Parallel lines",
+                                concepts: [
+                                    "Find parallel line gradient", "Parallel line equations", 
+                                    "Equation of line through point", "Parallel to given line", "Slope remains same", 
+                                    "Use y = mx + c"
+                                ]
+                            },
+                            "3.7": {
+                                name: "Perpendicular lines",
+                                concepts: [
+                                    "Gradient of perpendicular line", "Negative reciprocal gradient", 
+                                    "Find perpendicular equation", "Perpendicular bisector", 
+                                    "Equation from two points", "Line perpendicular to given", 
+                                    "Find equation using point", "Relationship between gradients", 
+                                    "Slope of perpendicular line"
+                                ]
+                            }
+                        }
+                    },
+                    "4": {
+                        name: "Geometry",
+                        subtopics: {
+                            "4.1": {
+                                name: "Geometrical terms",
+                                concepts: [
+                                    "Point", "Vertex", "Line", "Parallel", "Perpendicular", "Bearing", "Right angle", 
+                                    "Acute angle", "Obtuse angle", "Reflex angle", "Interior angle", "Exterior angle", 
+                                    "Similar shapes", "Congruent shapes", "Scale factor", "Triangle vocabulary", 
+                                    "Quadrilateral vocabulary", "Polygon vocabulary", "Simple solid vocabulary", 
+                                    "Nets of solids", "Equilateral triangle", "Isosceles triangle", "Scalene triangle", 
+                                    "Right-angled triangle", "Square", "Rectangle", "Kite", "Rhombus", "Parallelogram", 
+                                    "Trapezium", "Regular polygon", "Irregular polygon", "Pentagon", "Hexagon", 
+                                    "Octagon", "Decagon", "Cube", "Cuboid", "Prism", "Cylinder", "Pyramid", "Cone", 
+                                    "Sphere", "Face", "Surface", "Edge", "Circle vocabulary", "Centre", "Radius", 
+                                    "Diameter", "Circumference", "Semicircle", "Chord", "Tangent", "Arc", "Sector", 
+                                    "Segment"
+                                ]
+                            },
+                            "4.2": {
+                                name: "Geometrical constructions",
+                                concepts: [
+                                    "Measure lines", "Draw lines", "Measure angles", "Draw angles", 
+                                    "Construct triangle", "Use ruler and compass", "Draw nets", "Use nets", 
+                                    "Interpret nets", "Calculate surface area from nets", "Calculate volume from nets", 
+                                    "Construction arcs shown"
+                                ]
+                            },
+                            "4.3": {
+                                name: "Scale drawings",
+                                concepts: [
+                                    "Scale drawings", "Three-figure bearings", "Measure using ruler", 
+                                    "Draw using ruler", "Bearings clockwise from north", "000° to 360°", 
+                                    "Compass directions", "Due east, west, north, south", "Bearing of A from B", 
+                                    "Bearing of B from A"
+                                ]
+                            },
+                            "4.4": {
+                                name: "Similarity",
+                                concepts: [
+                                    "Calculate lengths", "Similar shapes", "Scale factor use", "Proportional dimensions"
+                                ]
+                            },
+                            "4.5": {
+                                name: "Symmetry",
+                                concepts: [
+                                    "Line symmetry", "Rotational symmetry", "Order of symmetry", "Symmetry of triangles", 
+                                    "Symmetry of quadrilaterals", "Symmetry of polygons"
+                                ]
+                            },
+                            "4.6": {
+                                name: "Angles",
+                                concepts: [
+                                    "Sum of angles at a point", "Straight line angle sum", "Vertically opposite angles", 
+                                    "Triangle angle sum", "Quadrilateral angle sum", "Corresponding angles", 
+                                    "Alternate angles", "Co-interior angles", "Angle properties of polygons", 
+                                    "Exterior angle of polygon", "Interior angle of polygon", 
+                                    "Three-letter angle notation", "Angle ABC", "Geometric reasoning"
+                                ]
+                            },
+                            "4.7": {
+                                name: "Circle theorems",
+                                concepts: [
+                                    "Angle in semicircle", "Angle between tangent and radius", "Give geometric reasons", 
+                                    "Use circle properties"
+                                ]
+                            },
+                            "4.8": {
+                                name: "Circle theorems II",
+                                concepts: [
+                                    "Equal chords equidistant", "Chords and distance from centre", 
+                                    "Perpendicular bisector of chord", "Bisector passes through centre", 
+                                    "Tangents from external point", "Equal tangent lengths", 
+                                    "Use circle symmetry properties", "Apply geometrical reasoning", 
+                                    "Give reasons using theorems", "Circle symmetry applications"
+                                ]
+                            }
+                        }
+                    },
+                    "5": {
+                        name: "Mensuration",
+                        subtopics: {
+                            "5.1": {
+                                name: "Units of measure",
+                                concepts: [
+                                    "Metric units of mass", "Metric units of length", "Metric units of area", 
+                                    "Metric units of volume", "Metric units of capacity", "Convert mm to cm", 
+                                    "Convert cm to m", "Convert km to m", "Convert mm² to cm²", "Convert m² to cm²", 
+                                    "Convert cm³ to m³", "Convert litres to millilitres", 
+                                    "Convert cubic metres to litres", "Convert grams to kilograms", 
+                                    "Convert kg to grams"
+                                ]
+                            },
+                            "5.2": {
+                                name: "Area and perimeter",
+                                concepts: [
+                                    "Perimeter of rectangle", "Area of rectangle", "Perimeter of triangle", 
+                                    "Area of triangle", "Perimeter of parallelogram", "Area of parallelogram", 
+                                    "Perimeter of trapezium", "Area of trapezium", "Calculate with shapes", 
+                                    "Solve practical problems"
+                                ]
+                            },
+                            "5.3": {
+                                name: "Circles arcs and sectors",
+                                concepts: [
+                                    "Circumference of circle", "Area of circle", "Arc length", "Sector area", 
+                                    "Fraction of circumference", "Fraction of circle area", "Sector angle", 
+                                    "Answers in terms of π", "Use given formulas", "Calculate using fractions"
+                                ]
+                            },
+                            "5.4": {
+                                name: "Surface area and volume",
+                                concepts: [
+                                    "Surface area of cuboid", "Volume of cuboid", "Surface area of prism", 
+                                    "Volume of prism", "Surface area of cylinder", "Volume of cylinder", 
+                                    "Curved surface of cylinder", "Surface area of cone", "Volume of cone", 
+                                    "Curved surface of cone", "Surface area of sphere", "Volume of sphere", 
+                                    "Surface area of pyramid", "Volume of pyramid", "Uniform cross-section", 
+                                    "Use given formulas", "Apply formulas correctly"
+                                ]
+                            },
+                            "5.5": {
+                                name: "Compound shapes and parts of shapes",
+                                concepts: [
+                                    "Perimeter of compound shapes", "Area of compound shapes", 
+                                    "Perimeter of shape parts", "Area of shape parts", "Surface area of compound solids", 
+                                    "Volume of compound solids", "Surface area of solid parts", 
+                                    "Volume of solid parts", "Half of a sphere", "Parts involving π", 
+                                    "Solve mensuration problems"
+                                ]
+                            }
+                        }
+                    },
+                    "6": {
+                        name: "Trigonometry",
+                        subtopics: {
+                            "6.1": {
+                                name: "Pythagoras' theorem",
+                                concepts: [
+                                    "Right-angled triangles", "Hypotenuse calculation", "Side length unknown", 
+                                    "Pythagoras' theorem use", "Find missing side", "Determine right angle", 
+                                    "Apply Pythagoras"
+                                ]
+                            },
+                            "6.2": {
+                                name: "Right-angled triangles",
+                                concepts: [
+                                    "Sine ratio", "Cosine ratio", "Tangent ratio", "Trigonometric ratios", 
+                                    "Find unknown angles", "Find unknown sides", "Trig calculations", 
+                                    "Use of SOHCAHTOA", "2D problems", "Combined with Pythagoras", 
+                                    "Bearings application", "Angle in degrees", "Decimal answers", "One decimal place"
+                                ]
+                            },
+                            "6.3": {
+                                name: "Exact trigonometric values",
+                                concepts: [
+                                    "Exact sine values", "Exact cosine values", "0° trigonometric values", 
+                                    "30° trigonometric values", "45° trigonometric values", 
+                                    "60° trigonometric values", "90° trigonometric values", 
+                                    "Trig ratios for common angles"
+                                ]
+                            },
+                            "6.4": {
+                                name: "Trigonometric functions",
+                                concepts: [
+                                    "Graph of sin x", "Graph of cos x", "Graph of tan x", "Sketch trigonometric graphs", 
+                                    "Interpret trigonometric graphs", "Solve sin equations", "Solve cos equations", 
+                                    "Solve tan equations", "Find angles between 0° and 360°", 
+                                    "Trig equations with constants"
+                                ]
+                            },
+                            "6.5": {
+                                name: "Non-right-angled triangles",
+                                concepts: [
+                                    "Sine rule", "Cosine rule", "Area of triangle formula", "Use ½ ab sin C", 
+                                    "Find missing side", "Find missing angle", "Obtuse angle problems", 
+                                    "Ambiguous case of sine rule", "Solve triangle problems"
+                                ]
+                            },
+                            "6.6": {
+                                name: "Pythagoras and trigonometry in 3D",
+                                concepts: [
+                                    "Apply Pythagoras in 3D", "Calculate space diagonals", "Use trigonometry in 3D", 
+                                    "Angle between line and plane", "Solve 3D problems", "Visualise 3D shapes", 
+                                    "Combine Pythagoras and trig", "Find angles in solids", "3D geometric reasoning"
+                                ]
+                            }
+                        }
+                    },
+                    "7": {
+                        name: "Transformations and vectors",
+                        subtopics: {
+                            "7.1": {
+                                name: "Transformations",
+                                concepts: [
+                                    "Recognise transformations", "Describe transformations", "Draw reflections", 
+                                    "Reflect in vertical line", "Reflect in horizontal line", "Rotate shapes", 
+                                    "Rotation about origin", "Rotation about vertices", "Rotation about midpoints", 
+                                    "Rotate by 90° multiples", "Enlargement from centre", "Enlargement scale factor", 
+                                    "Positive scale factors", "Fractional scale factors", "Translate using vector", 
+                                    "Column vector translation", "Use of ruler required", "No combined transformations"
+                                ]
+                            },
+                            "7.2": {
+                                name: "Vectors in two dimensions",
+                                concepts: [
+                                    "Vector notation (column)", "Vector representation AB", "Vector representation a", 
+                                    "Translation using vectors", "Add vectors", "Subtract vectors", 
+                                    "Multiply vector by scalar", "Vector operations", "Use directed line segments"
+                                ]
+                            },
+                            "7.3": {
+                                name: "Magnitude of a vector",
+                                concepts: [
+                                    "Calculate vector magnitude", "Use modulus notation", 
+                                    "Magnitude of column vector", "Magnitude of AB vector", "Magnitude of a vector", 
+                                    "Pythagoras in vectors", "Vector length calculation", "Apply x² + y² formula"
+                                ]
+                            },
+                            "7.4": {
+                                name: "Vector geometry",
+                                concepts: [
+                                    "Represent vectors graphically", "Use position vectors", "Sum of vectors", 
+                                    "Difference of vectors", "Express vectors in terms", "Solve geometric problems", 
+                                    "Show vectors parallel", "Prove collinearity", "Vector ratio problems", 
+                                    "Use similarity with vectors"
+                                ]
+                            }
+                        }
+                    },
+                    "8": {
+                        name: "Probability",
+                        subtopics: {
+                            "8.1": {
+                                name: "Introduction to probability",
+                                concepts: [
+                                    "Probability scale 0 to 1", "Calculate single event probability", 
+                                    "Complementary events", "Not occurring = 1 – probability", 
+                                    "Fraction decimal or percentage", "Use tables for probability", 
+                                    "Use graphs for probability", "Use Venn diagrams", "Single event problems", 
+                                    "Simple probability examples"
+                                ]
+                            },
+                            "8.2": {
+                                name: "Relative and expected frequencies",
+                                concepts: [
+                                    "Relative frequency as estimate", "Experimental probability", 
+                                    "Calculate expected frequency", "Estimate from spinner results", 
+                                    "Estimate population values", "Understand fair outcomes", 
+                                    "Understand biased outcomes", "Random events", "Expected value calculations"
+                                ]
+                            },
+                            "8.3": {
+                                name: "Probability of combined events",
+                                concepts: [
+                                    "Sample space diagrams", "Combined events with replacement", 
+                                    "Venn diagrams (two sets)", "Tree diagrams", "Outcomes at end of branches", 
+                                    "Probabilities on branches", "Find combined probabilities", 
+                                    "Use diagrams for solutions", "Replacement only"
+                                ]
+                            },
+                            "8.4": {
+                                name: "Conditional probability",
+                                concepts: [
+                                    "Conditional probability", "Use Venn diagrams", "Use tree diagrams", "Use tables", 
+                                    "Interpret conditional data", "Calculate given condition", 
+                                    "Dependent event probability", "Analyse probability scenarios", 
+                                    "Use logical reasoning", "Visualise probability flow"
+                                ]
+                            }
+                        }
+                    },
+                    "9": {
+                        name: "Statistics",
+                        subtopics: {
+                            "9.1": {
+                                name: "Classifying statistical data",
+                                concepts: [
+                                    "Classify data", "Tabulate data", "Tally tables", "Two-way tables", 
+                                    "Data organisation", "Categorical data", "Numerical data", "Frequency tables"
+                                ]
+                            },
+                            "9.2": {
+                                name: "Interpreting statistical data",
+                                concepts: [
+                                    "Read data tables", "Interpret diagrams", "Draw inferences", "Compare data sets", 
+                                    "Use graphs for comparison", "Use averages for comparison", 
+                                    "Use ranges for comparison", "Limitations of data", "Biases in data", 
+                                    "Sampling issues"
+                                ]
+                            },
+                            "9.3": {
+                                name: "Averages and range",
+                                concepts: [
+                                    "Calculate mean", "Calculate median", "Calculate mode", "Calculate range", 
+                                    "Use mean purpose", "Use median purpose", "Use mode purpose", "Use range purpose", 
+                                    "Ungrouped data", "Listed data", "Frequency table data"
+                                ]
+                            },
+                            "9.4": {
+                                name: "Statistical charts and diagrams",
+                                concepts: [
+                                    "Draw bar charts", "Interpret bar charts", "Draw pie charts", "Interpret pie charts", 
+                                    "Draw pictograms", "Interpret pictograms", "Draw stem-and-leaf diagrams", 
+                                    "Interpret stem-and-leaf diagrams", "Simple frequency distributions", 
+                                    "Composite bar charts", "Dual bar charts", "Ordered stem-and-leaf", 
+                                    "Include key in diagram"
+                                ]
+                            },
+                            "9.5": {
+                                name: "Scatter diagrams",
+                                concepts: [
+                                    "Draw scatter diagrams", "Interpret scatter diagrams", "Positive correlation", 
+                                    "Negative correlation", "Zero correlation", "Draw line of best fit", 
+                                    "Use line of best fit", "Plot points clearly", "Ruled line only", 
+                                    "Even point distribution"
+                                ]
+                            },
+                            "9.6": {
+                                name: "Cumulative frequency diagrams",
+                                concepts: [
+                                    "Cumulative frequency tables", "Draw cumulative diagrams", 
+                                    "Interpret cumulative diagrams", "Estimate median", "Find lower quartile", 
+                                    "Find upper quartile", "Calculate interquartile range", "Interpret percentiles", 
+                                    "Plot points clearly", "Use smooth curve", "Mark data points (×)"
+                                ]
+                            },
+                            "9.7": {
+                                name: "Histograms",
+                                concepts: [
+                                    "Draw histograms", "Interpret histograms", "Frequency density", 
+                                    "Calculate frequency density", 
+                                    "Use frequency = frequency density × class width", "Vertical axis label", 
+                                    "Class width use", "Compare distributions", "Use histogram area", 
+                                    "Density proportional to frequency"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            geoverse: {
+                name: "Geoverse",
+                color: "orange",
+                icon: "fa-globe-americas",
+                topics: {
+                    "coming-soon": {
+                        name: "Coming Soon",
+                        subtopics: {}
+                    }
+                }
+            },
+            spaceverse: {
+                name: "Spaceverse",
+                color: "cyan",
+                icon: "fa-rocket",
+                topics: {
+                    "coming-soon": {
+                        name: "Coming Soon",
+                        subtopics: {}
+                    }
+                }
+            }
+        };
+
+        // Global state variables
+        let currentVerse = null;
+        let currentTopic = null;
+        let currentSubtopic = null;
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Setup dark mode toggle
+            setupDarkMode();
+        });
+        
+        function setupEventListeners() {
+            // Setup verse card event listeners
+            document.querySelectorAll('.verse-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const verse = card.dataset.verse;
+                    if (verse === 'geoverse' || verse === 'spaceverse') {
+                        // Do nothing for locked verses
+                        showToast(`${database[verse].name} is coming soon!`, 'info');
+                        return;
+                    }
+                    navigateToVerse(verse);
+                });
+            });
+            
+            // Setup breadcrumb home link
+            document.querySelector('.breadcrumb-home').addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToHome();
+            });
+            
+            // Setup search
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    const query = searchInput.value.trim();
+                    if (query.length >= 2) {
+                        performSearch(query);
+                    } else if (query.length > 0) {
+                        showToast('Please enter at least 2 characters to search', 'info');
+                    }
+                }
+            });
+        }
+        
+        function setupDarkMode() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            
+            // Check user preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // Listen for changes in system preference
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            });
+            
+            // Toggle button
+            darkModeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+        }
+        
+        function navigateToHome() {
+            // Reset state
+            currentVerse = null;
+            currentTopic = null;
+            currentSubtopic = null;
+            
+            // Update UI
+            document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('verseView').classList.add('hidden');
+            document.getElementById('searchResultsView').classList.add('hidden');
+            
+            // Update breadcrumbs
+            updateBreadcrumbs();
+        }
+        
+        function navigateToVerse(verse) {
+            // Update state
+            currentVerse = verse;
+            currentTopic = null;
+            currentSubtopic = null;
+            
+            // Update UI
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('verseView').classList.remove('hidden');
+            document.getElementById('searchResultsView').classList.add('hidden');
+            
+            // Update breadcrumbs
+            updateBreadcrumbs();
+            
+            // Populate topics list
+            populateTopicsList();
+            
+            // Update headers with verse name and color
+            const verseData = database[verse];
+            const topicsHeader = document.getElementById('topicsHeader');
+            topicsHeader.textContent = `${verseData.name} Topics`;
+            topicsHeader.className = `text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 text-${verseData.color}-600 dark:text-${verseData.color}-400`;
+            
+            const subtopicsHeader = document.getElementById('subtopicsHeader');
+            subtopicsHeader.textContent = `Select a topic`;
+            subtopicsHeader.className = `text-2xl font-bold mb-4 text-${verseData.color}-600 dark:text-${verseData.color}-400`;
+        }
+        
+        function navigateToTopic(topicId) {
+            // Update state
+            currentTopic = topicId;
+            currentSubtopic = null;
+            
+            // Update UI - mark active topic
+            const topicsList = document.getElementById('topicsList');
+            topicsList.querySelectorAll('.topic-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const activeTopic = topicsList.querySelector(`[data-topic="${topicId}"]`);
+            if (activeTopic) {
+                activeTopic.classList.add('active');
+            }
+            
+            // Update breadcrumbs
+            updateBreadcrumbs();
+            
+            // Populate subtopics
+            populateSubtopicsList();
+        }
+        
+        function populateTopicsList() {
+            const topicsList = document.getElementById('topicsList');
+            topicsList.innerHTML = '';
+            
+            const verseData = database[currentVerse];
+            const colorClass = `text-${verseData.color}-600 dark:text-${verseData.color}-400`;
+            
+            // Sort topics by their number for ordered display
+            const topicIds = Object.keys(verseData.topics).sort((a, b) => {
+                const aNum = parseInt(a, 10);
+                const bNum = parseInt(b, 10);
+                return aNum - bNum;
+            });
+            
+            topicIds.forEach(topicId => {
+                const topic = verseData.topics[topicId];
+                const topicItem = document.createElement('div');
+                topicItem.className = `topic-item py-2 px-4 rounded-md mb-1 cursor-pointer hover:${colorClass}`;
+                topicItem.dataset.topic = topicId;
+                topicItem.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span>${topicId}. ${topic.name}</span>
+                        <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+                    </div>
+                `;
+                
+                topicItem.addEventListener('click', () => {
+                    navigateToTopic(topicId);
+                });
+                
+                topicsList.appendChild(topicItem);
+            });
+        }
+        
+        function populateSubtopicsList() {
+            const subtopicsList = document.getElementById('subtopicsList');
+            subtopicsList.innerHTML = '';
+            
+            const verseData = database[currentVerse];
+            const topic = verseData.topics[currentTopic];
+            const colorClass = `text-${verseData.color}-600 dark:text-${verseData.color}-400`;
+            
+            // Update header
+            const subtopicsHeader = document.getElementById('subtopicsHeader');
+            subtopicsHeader.textContent = `${currentTopic}. ${topic.name}`;
+            subtopicsHeader.className = `text-2xl font-bold mb-4 ${colorClass}`;
+            
+            // Sort subtopics for ordered display
+            const subtopicIds = Object.keys(topic.subtopics).sort((a, b) => {
+                const aNumParts = a.split('.');
+                const bNumParts = b.split('.');
+                
+                // Compare major part first
+                const aMajor = parseInt(aNumParts[0], 10);
+                const bMajor = parseInt(bNumParts[0], 10);
+                
+                if (aMajor !== bMajor) {
+                    return aMajor - bMajor;
+                }
+                
+                // Then compare minor part
+                const aMinor = parseInt(aNumParts[1], 10);
+                const bMinor = parseInt(bNumParts[1], 10);
+                return aMinor - bMinor;
+            });
+            
+            subtopicIds.forEach(subtopicId => {
+                const subtopic = topic.subtopics[subtopicId];
+                const subtopicSection = document.createElement('div');
+                subtopicSection.className = `mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-4`;
+                
+                const subtopicHeader = document.createElement('h3');
+                subtopicHeader.className = `text-lg font-medium mb-3 ${colorClass}`;
+                subtopicHeader.textContent = `${subtopicId} ${subtopic.name}`;
+                
+                const conceptsGrid = document.createElement('div');
+                conceptsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2';
+                
+                subtopic.concepts.forEach(concept => {
+                    const conceptItem = document.createElement('div');
+                    conceptItem.className = 'subtopic-item pl-4 py-1.5 text-gray-700 dark:text-gray-300';
+                    conceptItem.textContent = concept;
+                    conceptsGrid.appendChild(conceptItem);
+                });
+                
+                subtopicSection.appendChild(subtopicHeader);
+                subtopicSection.appendChild(conceptsGrid);
+                subtopicsList.appendChild(subtopicSection);
+            });
+        }
+        
+        function updateBreadcrumbs() {
+            const breadcrumbs = document.getElementById('breadcrumbs');
+            
+            // Clear existing breadcrumbs except for Home
+            while (breadcrumbs.childNodes.length > 2) {
+                breadcrumbs.removeChild(breadcrumbs.lastChild);
+            }
+            
+            // Always add a separator after Home
+            if (breadcrumbs.childNodes.length === 1) {
+                const separator = document.createElement('span');
+                separator.className = 'mx-2 text-gray-500 dark:text-gray-400';
+                separator.textContent = '/';
+                breadcrumbs.appendChild(separator);
+            }
+            
+            // Add verse breadcrumb if applicable
+            if (currentVerse) {
+                const verseData = database[currentVerse];
+                const verseBreadcrumb = document.createElement('a');
+                verseBreadcrumb.href = '#';
+                verseBreadcrumb.className = `text-${verseData.color}-600 dark:text-${verseData.color}-400 hover:underline`;
+                verseBreadcrumb.textContent = verseData.name;
+                verseBreadcrumb.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navigateToVerse(currentVerse);
+                });
+                breadcrumbs.appendChild(verseBreadcrumb);
+                
+                // Add separator
+                const separator = document.createElement('span');
+                separator.className = 'mx-2 text-gray-500 dark:text-gray-400';
+                separator.textContent = '/';
+                breadcrumbs.appendChild(separator);
+            }
+            
+            // Add topic breadcrumb if applicable
+            if (currentTopic) {
+                const topicData = database[currentVerse].topics[currentTopic];
+                const topicBreadcrumb = document.createElement('span');
+                topicBreadcrumb.className = 'text-gray-700 dark:text-gray-300';
+                topicBreadcrumb.textContent = `${currentTopic}. ${topicData.name}`;
+                breadcrumbs.appendChild(topicBreadcrumb);
+            }
+        }
+        
+        function performSearch(query) {
+            const searchResultsView = document.getElementById('searchResultsView');
+            const searchResultsList = document.getElementById('searchResultsList');
+            const resultCount = document.getElementById('resultCount');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            const searchTermDisplay = document.getElementById('searchTermDisplay');
+            
+            // Show the search view
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('verseView').classList.add('hidden');
+            searchResultsView.classList.remove('hidden');
+            
+            // Reset current navigation
+            currentVerse = null;
+            currentTopic = null;
+            currentSubtopic = null;
+            
+            // Update breadcrumbs
+            updateBreadcrumbs();
+            
+            // Clear previous results
+            searchResultsList.innerHTML = '';
+            
+            // Show loading indicator
+            searchResultsList.innerHTML = `
+                <div class="flex justify-center items-center py-12">
+                    <div class="loading-spinner mr-3 text-blue-500"></div>
+                    <span class="text-gray-600 dark:text-gray-300">Searching...</span>
+                </div>
+            `;
+            
+            // Update search term display
+            searchTermDisplay.textContent = `"${query}"`;
+            
+            // Perform the search (with a slight delay to show the loading state)
+            setTimeout(() => {
+                const results = searchDatabase(query);
+                displaySearchResults(results, query);
+            }, 500);
+        }
+        
+        function searchDatabase(query) {
+            query = query.toLowerCase();
+            const results = [];
+            
+            // Search through all verses
+            Object.keys(database).forEach(verseKey => {
+                const verse = database[verseKey];
+                
+                // Skip coming soon verses
+                if (verseKey === 'geoverse' || verseKey === 'spaceverse') {
+                    return;
+                }
+                
+                // Search in topics
+                Object.keys(verse.topics).forEach(topicId => {
+                    const topic = verse.topics[topicId];
+                    
+                    // Check if topic name matches
+                    if (topic.name.toLowerCase().includes(query)) {
+                        results.push({
+                            verse: verseKey,
+                            verseName: verse.name,
+                            verseColor: verse.color,
+                            topicId: topicId,
+                            topicName: topic.name,
+                            type: 'topic',
+                            path: `${verse.name} > Topic ${topicId}`
+                        });
+                    }
+                    
+                    // Search in subtopics
+                    Object.keys(topic.subtopics).forEach(subtopicId => {
+                        const subtopic = topic.subtopics[subtopicId];
+                        
+                        // Check if subtopic name matches
+                        if (subtopic.name.toLowerCase().includes(query)) {
+                            results.push({
+                                verse: verseKey,
+                                verseName: verse.name,
+                                verseColor: verse.color,
+                                topicId: topicId,
+                                topicName: topic.name,
+                                subtopicId: subtopicId,
+                                subtopicName: subtopic.name,
+                                type: 'subtopic',
+                                path: `${verse.name} > Topic ${topicId} > ${subtopicId}`
+                            });
+                        }
+                        
+                        // Search in concepts
+                        subtopic.concepts.forEach(concept => {
+                            if (concept.toLowerCase().includes(query)) {
+                                results.push({
+                                    verse: verseKey,
+                                    verseName: verse.name,
+                                    verseColor: verse.color,
+                                    topicId: topicId,
+                                    topicName: topic.name,
+                                    subtopicId: subtopicId,
+                                    subtopicName: subtopic.name,
+                                    concept: concept,
+                                    type: 'concept',
+                                    path: `${verse.name} > Topic ${topicId} > ${subtopicId}`
+                                });
+                            }
+                        });
+                    });
+                });
+            });
+            
+            return results;
+        }
+        
+        function displaySearchResults(results, query) {
+            const searchResultsList = document.getElementById('searchResultsList');
+            const resultCount = document.getElementById('resultCount');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            
+            // Clear loading indicator
+            searchResultsList.innerHTML = '';
+            
+            // Update result count
+            resultCount.textContent = `${results.length} result${results.length !== 1 ? 's' : ''}`;
+            
+            // Display results or no results message
+            if (results.length === 0) {
+                noResultsMessage.classList.remove('hidden');
+            } else {
+                noResultsMessage.classList.add('hidden');
+                
+                // Group results by verse for better organization
+                const groupedResults = groupResultsByVerse(results);
+                
+                // Display grouped results
+                Object.keys(groupedResults).forEach(verse => {
+                    const verseGroup = groupedResults[verse];
+                    const verseResults = verseGroup.results;
+                    
+                    // Create verse header
+                    const verseHeader = document.createElement('div');
+                    verseHeader.className = `mb-3 pb-1 border-b border-gray-200 dark:border-gray-700`;
+                    verseHeader.innerHTML = `
+                        <h3 class="text-lg font-semibold text-${verseGroup.color}-600 dark:text-${verseGroup.color}-400 flex items-center">
+                            <i class="fas ${verseGroup.icon} mr-2"></i>
+                            ${verseGroup.name}
+                            <span class="text-sm text-gray-500 dark:text-gray-400 ml-2 font-normal">
+                                (${verseResults.length} match${verseResults.length !== 1 ? 'es' : ''})
+                            </span>
+                        </h3>
+                    `;
+                    searchResultsList.appendChild(verseHeader);
+                    
+                    // Create result items
+                    verseResults.forEach(result => {
+                        const resultItem = document.createElement('div');
+                        resultItem.className = `bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm mb-3 border-l-4 border-${verseGroup.color}-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition`;
+                        
+                        let titleText = '';
+                        let detailText = '';
+                        
+                        switch (result.type) {
+                            case 'topic':
+                                titleText = `${result.topicId}. ${result.topicName}`;
+                                detailText = `Click to view all subtopics`;
+                                break;
+                            case 'subtopic':
+                                titleText = `${result.subtopicId} ${result.subtopicName}`;
+                                detailText = `In ${result.topicId}. ${result.topicName}`;
+                                break;
+                            case 'concept':
+                                titleText = result.concept;
+                                detailText = `In ${result.subtopicId} ${result.subtopicName}`;
+                                break;
+                        }
+                        
+                        // Highlight the query in the title
+                        titleText = highlightText(titleText, query);
+                        
+                        resultItem.innerHTML = `
+                            <div class="flex flex-col">
+                                <div class="text-gray-800 dark:text-gray-200 font-medium">${titleText}</div>
+                                <div class="text-gray-600 dark:text-gray-400 text-sm mt-1">${detailText}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                    <i class="fas fa-map-marker-alt mr-1"></i> ${result.path}
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Add click handler
+                        resultItem.addEventListener('click', () => {
+                            navigateToSearchResult(result);
+                        });
+                        
+                        searchResultsList.appendChild(resultItem);
+                    });
+                });
+            }
+        }
+        
+        function groupResultsByVerse(results) {
+            const grouped = {};
+            
+            results.forEach(result => {
+                const verse = result.verse;
+                
+                if (!grouped[verse]) {
+                    grouped[verse] = {
+                        name: database[verse].name,
+                        color: database[verse].color,
+                        icon: database[verse].icon,
+                        results: []
+                    };
+                }
+                
+                grouped[verse].results.push(result);
+            });
+            
+            return grouped;
+        }
+        
+        function highlightText(text, query) {
+            // Escape regex special characters in the query
+            const escapeRegExp = (string) => {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            };
+            
+            const escapedQuery = escapeRegExp(query);
+            const regex = new RegExp(`(${escapedQuery})`, 'gi');
+            
+            return text.replace(regex, '<span class="bg-yellow-200 dark:bg-yellow-900 px-1 rounded">$1</span>');
+        }
+        
+        function navigateToSearchResult(result) {
+            // First navigate to the verse
+            navigateToVerse(result.verse);
+            
+            // Then navigate to the topic
+            navigateToTopic(result.topicId);
+            
+            // Finally, if it's a subtopic or concept, scroll to it
+            if (result.type === 'subtopic' || result.type === 'concept') {
+                setTimeout(() => {
+                    const subtopicElement = document.querySelector(`h3:contains("${result.subtopicId}")`);
+                    
+                    if (subtopicElement) {
+                        subtopicElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        
+                        // Add highlight animation
+                        subtopicElement.parentElement.classList.add('highlight');
+                        
+                        // If it's a concept, try to find and highlight it
+                        if (result.type === 'concept') {
+                            setTimeout(() => {
+                                const conceptItems = subtopicElement.parentElement.querySelectorAll('.subtopic-item');
+                                
+                                conceptItems.forEach(item => {
+                                    if (item.textContent.trim() === result.concept) {
+                                        item.classList.add('highlight');
+                                        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        item.classList.add('bg-yellow-100', 'dark:bg-yellow-900', 'font-medium');
+                                    }
+                                });
+                            }, 300);
+                        }
+                    }
+                }, 300);
+            }
+        }
+        
+        // Helper function to find element containing text
+        HTMLElement.prototype.contains = function(text) {
+            return this.textContent.includes(text);
+        };
+        
+        function showToast(message, type = 'info') {
+            // Create toast container if it doesn't exist
+            let toastContainer = document.getElementById('toast-container');
+            
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'fixed bottom-5 right-5 z-50 flex flex-col gap-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            // Create toast
+            const toast = document.createElement('div');
+            toast.className = `bg-white dark:bg-gray-800 shadow-lg rounded-lg px-4 py-3 flex items-center transition transform duration-300 ease-in-out max-w-md`;
+            
+            // Set toast border and icon based on type
+            let icon, borderClass;
+            switch (type) {
+                case 'success':
+                    icon = 'fa-check-circle text-green-500';
+                    borderClass = 'border-l-4 border-green-500';
+                    break;
+                case 'error':
+                    icon = 'fa-exclamation-circle text-red-500';
+                    borderClass = 'border-l-4 border-red-500';
+                    break;
+                case 'warning':
+                    icon = 'fa-exclamation-triangle text-yellow-500';
+                    borderClass = 'border-l-4 border-yellow-500';
+                    break;
+                case 'info':
+                default:
+                    icon = 'fa-info-circle text-blue-500';
+                    borderClass = 'border-l-4 border-blue-500';
+                    break;
+            }
+            
+            toast.classList.add(borderClass);
+            
+            // Add content
+            toast.innerHTML = `
+                <i class="fas ${icon} mr-3 text-lg"></i>
+                <div class="text-gray-800 dark:text-gray-200">${message}</div>
+                <button class="ml-auto text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // Add close button functionality
+            toast.querySelector('button').addEventListener('click', () => {
+                removeToast(toast);
+            });
+            
+            // Add to container with animation
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(1rem)';
+            toastContainer.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                removeToast(toast);
+            }, 3000);
+        }
+        
+        function removeToast(toast) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(1rem)';
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+    </script>
+
+
+</body></html>
